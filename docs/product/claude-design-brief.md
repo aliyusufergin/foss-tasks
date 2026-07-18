@@ -8,11 +8,42 @@ screenshot translate faithfully into the React Native app.
 
 ---
 
+## Design direction (decided — grilled 2026-07-18)
+
+Design to this information architecture and interaction direction (the *what/where*; you own the
+*visual* execution):
+
+- **Home = "Today" agenda.** The app opens to today's work in three sections, in this order:
+  **Overdue** (past due, still open — shown only if any, collapsible, gentle red emphasis) →
+  **Timed today** (chronological) → **All-day / anytime today**. Friendly empty state when clear.
+- **Navigation = 3 bottom tabs** — **Today**, **Calendar**, **All** — plus a prominent **"+" FAB**
+  for adding, and **Settings reached from a header icon** (not a tab). "All" is a single filtered
+  pool of tasks (priority / dated-vs-undated / done history); undated (open-ended) tasks live here.
+  No projects/lists/tags in v1.
+- **Calendar tab** = pick a day → that day's tasks and recurring occurrences; create a task on the
+  selected day (defaults to all-day).
+- **Task row = comfortable density, scannable.** Leading done checkbox; a thin colored **priority**
+  left-accent (none = none); **title on one line** (truncate); a **secondary meta line only when
+  there's a signal** — the most relevant date chip (overdue in red), a small recurrence glyph, a
+  sub-task count like "2/5". Description, reminders, defer, full range live in detail, not the row.
+- **Add flow = one quick-add sheet, natural-language first.** With AI on: a single text input
+  parses natural language ("dentist Tuesday 3pm, remind me an hour before") into a task, then shows
+  an **editable preview to confirm** before saving. With AI off: the same input is a plain title
+  with a "+ details" expansion. One entry point either way.
+- **Task detail/create form = progressive + quick chips.** Title always visible; a **quick chip
+  row** under it for the common fields (date, priority); everything else (recurrence, reminder,
+  defer, sub-tasks, description) behind **"+ Add …" rows** revealed on demand. **Feature-toggled-off
+  fields do not appear at all** — this is how minimalists get a simple form and power users still
+  reach everything. The AI preview screen is this same form, pre-filled.
+- **Theme:** light + dark, both designed. (Density toggle, projects/tags, group-sharing UI are v2 —
+  don't design them now.)
+
 ## Prompt to paste into Claude Design
 
 You are designing screens for a **mobile-first, cross-platform task app** built in **React Native
 + Expo** (NOT web — the output is a reference mockup that will be re-implemented in RN). Design
-for a phone viewport first (~390×844). Respect these constraints so the design ports cleanly:
+for a phone viewport first (~390×844). Follow the **Design direction** section above for
+information architecture and interactions. Respect these constraints so the design ports cleanly:
 
 **Layout**
 - Flexbox only. No CSS Grid, no `position: sticky`, no floats, no `vh`/`vw` — RN can't use them.

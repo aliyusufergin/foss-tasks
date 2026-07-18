@@ -35,6 +35,10 @@ tasarımı Claude Code'a (bana) devrediyorsun. Aşağıdaki sıra bu kadar.
 - Brief şablonunu (`docs/product/claude-design-brief.md`) yapıştır
 - Export: HTML + screenshot + token isimleri → **bana ver**
 
+> **Not:** Design **direction** (IA, navigasyon, home yapısı, task row, ekleme akışı, form disclosure)
+> `/grill-me` ile zaten keskinleştirildi ve brief'in **"Design direction"** bölümüne işlendi. Claude
+> Design'da IA/navigasyonu **yeniden kararlaştırma** — brief'teki yönü **uygula**, sen görsele odaklan.
+
 Bu ikisi zaman çakışmaz: ben backend'i yazarken sen tasarım sistemini yetiştirirsin.
 
 ### Adım 1 — Altyapı (tasarımsız)

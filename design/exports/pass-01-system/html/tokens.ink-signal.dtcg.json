@@ -1,0 +1,301 @@
+{
+  "$description": "FOSS Tasks — Ink & Signal theme (themeVersion 1). W3C DTCG. Every color token: $value = LIGHT, $extensions['app.foss-tasks.modes'].dark = DARK. All sRGB hex.",
+  "color": {
+    "bg": {
+      "base": {
+        "$type": "color",
+        "$value": "#F3F5F6",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#000000"
+          }
+        },
+        "$description": "Screen background"
+      },
+      "surface": {
+        "$type": "color",
+        "$value": "#FFFFFF",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#111417"
+          }
+        },
+        "$description": "Task rows, cards, bars"
+      },
+      "elevated": {
+        "$type": "color",
+        "$value": "#FFFFFF",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#181D21"
+          }
+        },
+        "$description": "Sheets, modals; light adds shadow"
+      },
+      "subtle": {
+        "$type": "color",
+        "$value": "#E8ECEF",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#1A2024"
+          }
+        },
+        "$description": "Neutral chips, subtle fills"
+      },
+      "pressed": {
+        "$type": "color",
+        "$value": "#EDF1F3",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#1E2529"
+          }
+        },
+        "$description": "Pressed row/button state"
+      }
+    },
+    "text": {
+      "primary": {
+        "$type": "color",
+        "$value": "#10161B",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#E8EEF2"
+          }
+        }
+      },
+      "secondary": {
+        "$type": "color",
+        "$value": "#46525B",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#97A5B0"
+          }
+        }
+      },
+      "muted": {
+        "$type": "color",
+        "$value": "#7A8791",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#667582"
+          }
+        }
+      }
+    },
+    "accent": {
+      "default": {
+        "$type": "color",
+        "$value": "#0E8C7D",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#3FC0A9"
+          }
+        }
+      },
+      "pressed": {
+        "$type": "color",
+        "$value": "#0A6E62",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#62D1BD"
+          }
+        }
+      },
+      "on": {
+        "$type": "color",
+        "$value": "#FFFFFF",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#000000"
+          }
+        },
+        "$description": "Text/icon on accent fills"
+      },
+      "surface": {
+        "$type": "color",
+        "$value": "#DCF0EC",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#12332E"
+          }
+        },
+        "$description": "Accent-tinted chip bg"
+      }
+    },
+    "status": {
+      "done": {
+        "$type": "color",
+        "$value": "#2E9E5B",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#4FBA79"
+          }
+        }
+      },
+      "overdue": {
+        "$type": "color",
+        "$value": "#D64545",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#E46A6A"
+          }
+        }
+      },
+      "overdueSurface": {
+        "$type": "color",
+        "$value": "#F9E3E3",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#3A2226"
+          }
+        },
+        "$description": "Overdue chip bg"
+      },
+      "blocked": {
+        "$type": "color",
+        "$value": "#7A8791",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#667582"
+          }
+        },
+        "$description": "v2; alias of text.muted for now"
+      }
+    },
+    "border": {
+      "default": {
+        "$type": "color",
+        "$value": "#DFE4E8",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#262D33"
+          }
+        }
+      }
+    },
+    "priority": {
+      "low": {
+        "$type": "color",
+        "$value": "#3E7FC1",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#5D9BD4"
+          }
+        }
+      },
+      "medium": {
+        "$type": "color",
+        "$value": "#DD8425",
+        "$extensions": {
+          "app.foss-tasks.modes": {
+            "dark": "#E29A47"
+          }
+        }
+      },
+      "high": {
+        "$type": "color",
+        "$value": "{color.status.overdue}",
+        "$description": "Alias; 'none' renders no accent bar"
+      }
+    }
+  },
+  "space": {
+    "xs": {
+      "$type": "dimension",
+      "$value": "4px"
+    },
+    "sm": {
+      "$type": "dimension",
+      "$value": "8px"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "12px"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "16px"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": "24px"
+    },
+    "xxl": {
+      "$type": "dimension",
+      "$value": "32px"
+    }
+  },
+  "radius": {
+    "sm": {
+      "$type": "dimension",
+      "$value": "4px",
+      "$description": "Chips"
+    },
+    "md": {
+      "$type": "dimension",
+      "$value": "6px",
+      "$description": "Rows, cards, checkbox"
+    },
+    "lg": {
+      "$type": "dimension",
+      "$value": "10px",
+      "$description": "Inputs, sheets, tab bar"
+    },
+    "xl": {
+      "$type": "dimension",
+      "$value": "14px",
+      "$description": "FAB"
+    },
+    "pill": {
+      "$type": "dimension",
+      "$value": "999px"
+    }
+  },
+  "type": {
+    "display": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "IBM Plex Sans",
+        "fontSize": "28px",
+        "fontWeight": 700,
+        "lineHeight": "34px"
+      }
+    },
+    "title": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "IBM Plex Sans",
+        "fontSize": "17px",
+        "fontWeight": 600,
+        "lineHeight": "22px"
+      }
+    },
+    "body": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "IBM Plex Sans",
+        "fontSize": "15px",
+        "fontWeight": 400,
+        "lineHeight": "20px"
+      }
+    },
+    "label": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "IBM Plex Sans",
+        "fontSize": "13px",
+        "fontWeight": 500,
+        "lineHeight": "18px"
+      }
+    },
+    "caption": {
+      "$type": "typography",
+      "$value": {
+        "fontFamily": "IBM Plex Sans",
+        "fontSize": "11px",
+        "fontWeight": 600,
+        "lineHeight": "14px"
+      }
+    }
+  }
+}

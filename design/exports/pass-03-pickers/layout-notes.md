@@ -1,0 +1,8 @@
+# Pickers — layout notes
+All are bottom sheets (bg.elevated, grabber, type.title, full-width accent Done) except edit-scope (centered dialog).
+Schedule: 4 radio rows None / All-day / Time / Range (20 radio, box-sizing border-box, radius 999; selected = 6-wide accent ring); selected row highlights bg.pressed and reveals inline bg.subtle fields (date / date+time / start+end), 14/600.
+Deadline + Defer: caption group headers (DEADLINE · DUE BY / DEFER · HIDE UNTIL), bg.subtle date field with × clear, explainer caption, hairline divider between groups.
+Recurrence: FREQ segmented (Daily/Weekly/Monthly/Yearly); INTERVAL stepper (32 bg.subtle −/+, value 15/700); BYDAY 36 circle chips (selected accent/accent.on, Monday start); ENDS radios Never / On date / After n times; live RRULE string in mono caption. Maps 1:1 to RFC 5545.
+Edit-scope dialog: centered card (bg.elevated, radius.xl, width = screen − 72) — title + body, stacked hairline rows: "This occurrence only" / "This and following" / "All occurrences" accent 15/600, Cancel muted.
+Reminders: each reminder = bg.subtle row with ×; dashed add-row; preset pill chips (10 min / 1 hour / 1 day before). Multiple allowed.
+Checklist: bg.surface row cards (radius.md, padding 12) — 12 drag handle + 18 checkbox + 15 title; nesting marginLeft 28/level; drag state = 1.5 accent border + shadow; done = muted + strikethrough. Sub-tasks are title+done only.

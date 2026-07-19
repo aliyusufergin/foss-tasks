@@ -51,6 +51,13 @@ source — RN has no DOM/CSS cascade). Built-in themes are compiled with **Style
 (DTCG → RN theme, with build-time Oklch/P3 → RN-safe color conversion); runtime custom-theme
 import uses the same DTCG → theme mapping at runtime. See ADR 0006.
 
+The **v1 design is done and committed** under `design/exports/` (theme **"Ink & Signal"**,
+`themeVersion` 1, font **IBM Plex Sans**). Canonical token source:
+`design/exports/pass-01-system/html/tokens.ink-signal.dtcg.json` (light in `$value`, dark in
+`$extensions["app.foss-tasks.modes"].dark`, all sRGB hex — no Oklch/P3 in the actual export).
+Per-pass HTML bundles + `layout-notes.md` + light/dark screenshots sit alongside; see
+`design/exports/README_cdesign.md` for the folder map and which pass covers which screen.
+
 ### Task
 The core unit of work. A Task's time is described by **two independent axes**, not a single
 "type". Any combination is valid (including none).

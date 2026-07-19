@@ -24,68 +24,71 @@ tasarımı Claude Code'a (bana) devrediyorsun. Aşağıdaki sıra bu kadar.
 
 ## Sıra
 
-### Adım 0 — ŞİMDİ (paralel iki iş)
+### Adım 0 — ŞİMDİ
 
 **🤖 Ben:** `/implement` ile **#2 (backend stack)** başlar. Tasarım beklemez.
 → Sen bana: `/implement` yaz (frontier: #2).
 
-**🧑 Sen (aynı anda):** Claude Design'da **tasarım sistemini** hazırla:
-- Renkler (light + dark), spacing (8-pt), tipografi, radius
-- Çekirdek component'lar: Task satırı, checkbox, sub-task, tab bar, "+ ekle" butonu, AI girişi
-- Brief şablonunu (`docs/product/claude-design-brief.md`) yapıştır
-- Export: HTML + screenshot + token isimleri → **bana ver**
-
-> **Not:** Design **direction** (IA, navigasyon, home yapısı, task row, ekleme akışı, form disclosure)
-> `/grill-me` ile zaten keskinleştirildi ve brief'in **"Design direction"** bölümüne işlendi. Claude
-> Design'da IA/navigasyonu **yeniden kararlaştırma** — brief'teki yönü **uygula**, sen görsele odaklan.
-
-Bu ikisi zaman çakışmaz: ben backend'i yazarken sen tasarım sistemini yetiştirirsin.
+> ✅ **Tasarım sistemi zaten hazır ve commit'li** (`design/exports/`, 14 ekran, light+dark, DTCG
+> token JSON). Adım 0'da eskiden paralel yaptığın Claude Design işi **bitti** — artık sadece implement
+> tarafı kaldı.
 
 ### Adım 1 — Altyapı (tasarımsız)
 
 Sırayla, her biri için `/implement` + arada `/clear`:
 - **#2 → #3** (T01 backend, T02 app skeleton). UI yok, tasarım gerekmez.
 
-⚠️ **#4'e (T03) geçmeden ÖNCE:** Adım 0'daki **token export'unu bana vermiş ol.** T03 theme
-pipeline'ı gerçek token değerleriyle kuracak.
+> ✅ **v1 tasarımı bitti ve commit'li** — `design/exports/` (tema "Ink & Signal", `themeVersion` 1,
+> font IBM Plex Sans). Artık her UI ticket'ında Claude Design'a gitmene gerek yok; ilgili klasörü
+> göstermen yeter. Token kaynağı: `design/exports/pass-01-system/html/tokens.ink-signal.dtcg.json`.
+> Klasör haritası: `design/exports/README_cdesign.md`.
+
+⚠️ **#4'e (T03) geçmeden ÖNCE:** token export'u zaten commit'li
+(`design/exports/pass-01-system/html/tokens.ink-signal.dtcg.json`). T03 theme pipeline'ı bu gerçek
+değerlerle kuracak — ekstra bir şey yapmana gerek yok.
 
 ### Adım 2 — UI temeli
 
-- **#4 (T03 — theming + i18n + nav shell).** Ben senin token'larından light/dark + Restyle
-  pipeline kurarım. Buradan sonra tüm ekranlar temalı/lokalize.
-  → Gerekli girdi: 🧑 tasarım sistemi token'ları (Adım 0).
+- **#4 (T03 — theming + i18n + nav shell).** Ben `design/exports/pass-01-system/`'daki token'lardan
+  light/dark + Restyle pipeline kurarım. Buradan sonra tüm ekranlar temalı/lokalize.
+  → Girdi: `pass-01-system/html/tokens.ink-signal.dtcg.json` (commit'li).
 
 ### Adım 3 — Task çekirdeği ve özellikler
 
-Her UI ticket'ında **önce o ekranı Claude Design'da tasarla → bana ver → `/implement`**.
-`#5` bitince `#6/#7/#8/#14` paralel açılır (istediğin sırada yapabilirsin).
+Her UI ticket'ında **ilgili `design/exports/` klasörünü göster → `/implement`**. Tasarım hazır,
+yeniden çizmene gerek yok. `#5` bitince `#6/#7/#8/#14` paralel açılır (istediğin sırada).
 
-| Sıra | Ticket | Önce tasarla (🧑) | Blocker |
-|---|---|---|---|
-| 1 | #5 (T04 walking-skeleton Task) | Task listesi | #4 |
-| 2 | #6 (T05 desc + priority) | Task detay | #5 |
-| 3 | #7 (T06 Schedule) | Schedule seçici | #5 |
-| 4 | #8 (T07 Deadline + Defer) | Deadline/defer seçici | #5 |
-| 5 | #9 (T08 Sub-task + sıralama) | Checklist ekranı | #5 |
-| 6 | #14 (T13 Preferences/toggle) | Ayarlar ekranı | #5 |
-| 7 | #10 (T09 Recurrence) | Recurrence editor + "this/following/all" | #7 |
-| 8 | #11 (T10 Reminder + bildirim) | Reminder UI | #7, #8, #10 |
-| 9 | #12 (T11 Takvim) | Takvim görünümü | #7, #10 |
-| 10 | #13 (T12 Tema import) | Tema import ekranı | #4 |
-| 11 | #15 (T14 AI capture) | AI capture girişi | #7, #8, #10, #14 |
+| Sıra | Ticket | Ekran | Design export klasörü | Blocker |
+|---|---|---|---|---|
+| 1 | #5 (T04 walking-skeleton Task) | Task listesi | `pass-02-today/` + `pass-02-all/` (satır: `pass-01-system/`) | #4 |
+| 2 | #6 (T05 desc + priority) | Task detay | `pass-03-task-form/` | #5 |
+| 3 | #7 (T06 Schedule) | Schedule seçici | `pass-03-pickers/` (`schedule-picker-*`) | #5 |
+| 4 | #8 (T07 Deadline + Defer) | Deadline/defer seçici | `pass-03-pickers/` (`deadline-defer-*`) | #5 |
+| 5 | #9 (T08 Sub-task + sıralama) | Checklist ekranı | `pass-03-pickers/` (`checklist-*`) | #5 |
+| 6 | #14 (T13 Preferences/toggle) | Ayarlar ekranı | `pass-04-settings/` | #5 |
+| 7 | #10 (T09 Recurrence) | Recurrence editor + "this/following/all" | `pass-03-pickers/` (`recurrence-*`, `edit-scope-*`) | #7 |
+| 8 | #11 (T10 Reminder + bildirim) | Reminder UI | `pass-03-pickers/` (`reminders-*`) | #7, #8, #10 |
+| 9 | #12 (T11 Takvim) | Takvim görünümü | `pass-02-calendar/` | #7, #10 |
+| 10 | #13 (T12 Tema import) | Tema import ekranı | `pass-04-settings/` (`theme-*`) | #4 |
+| 11 | #15 (T14 AI capture) | AI capture girişi | `pass-03-quick-add/` | #7, #8, #10, #14 |
 
-(#13 tema import erken de yapılabilir — sadece #4'e bağlı.)
+(#13 tema import erken de yapılabilir — sadece #4'e bağlı. Auth ekranları `pass-04-auth/`'ta —
+backend auth ticket'larıyla eşleşir.)
 
 ---
 
-## Tasarım devri — her UI ticket'ında tekrar
+## Tasarım devri — her UI ticket'ında (v1: tasarım hazır)
 
-1. Claude Design'da ekranı tasarla (repo + mevcut token'ları bağla ki tutarlı olsun).
-2. `docs/product/claude-design-brief.md` şablonunu session başında yapıştır.
-3. Export al: **HTML/CSS + screenshot (light ve dark)** + kısa layout notu.
-4. Bana ver: "Şu ekranın tasarımı, şu ticket için" de.
-5. Ben: HTML'den DTCG token'ı günceller, Restyle ile ekranı yazar, screenshot'la parite kontrol
-   eder, test + commit ederim.
+v1 için Claude Design turu **bitti**. Her UI ticket'ında yeni tasarım çizmek yerine:
+
+1. `/implement #N` de (temiz session).
+2. İlgili `design/exports/` klasörünü söyle (yukarıdaki tablo). Ben zaten CONTEXT.md'den yeri
+   biliyorum ama teyit iyi olur.
+3. Ben: o klasördeki HTML'den DTCG token'ı çıkarır/doğrular, Restyle ile ekranı yazar,
+   screenshot'la (light+dark) parite kontrol eder, test + commit ederim.
+
+> Yeni bir v2 ekranı gerekince eski akış geçerli: Claude Design'da çiz, `claude-design-brief.md`
+> şablonunu yapıştır, export'u `design/exports/`'a koy, bana söyle.
 
 ---
 

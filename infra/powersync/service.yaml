@@ -1,0 +1,42 @@
+# yaml-language-server: $schema=https://unpkg.com/@powersync/service-schema@latest/json-schema/powersync-config.json
+#
+# PowerSync Service config. Environment variables prefixed with PS_ are
+# substituted via the `!env` custom tag. See docs/product/self-hosting.md.
+
+telemetry:
+  # Opt out of anonymous usage reporting for a self-hosted, private deployment.
+  disable_telemetry_sharing: true
+
+# Source-of-truth database (logical replication). PowerSync connects as the
+# powersync_replication role (REPLICATION + BYPASSRLS) created in
+# infra/postgres/init/02-powersync.sh.
+replication:
+  connections:
+    - type: postgresql
+      uri: !env PS_DATA_SOURCE_URI
+      sslmode: disable
+
+# Sync bucket storage on Postgres (Beta — ADR-0007). A SEPARATE Postgres
+# instance from the source; PowerSync creates and owns its schema here.
+storage:
+  type: postgresql
+  uri: !env PS_STORAGE_SOURCE_URI
+  sslmode: disable
+
+port: !env PS_PORT
+
+sync_config:
+  path: sync-rules.yaml
+
+client_auth:
+  # The auth service publishes its public key here for token validation.
+  jwks_uri: !env PS_JWKS_URL
+  # Required so a plain-http, in-cluster JWKS URL (http://auth:...) is accepted.
+  allow_local_jwks: true
+  # Must match the auth service's AUTH_JWT_AUDIENCE.
+  audience: ["powersync"]
+
+api:
+  tokens:
+    # Admin API auth (diagnostics endpoints). Override in production.
+    - !env PS_ADMIN_API_TOKEN

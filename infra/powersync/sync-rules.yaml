@@ -1,0 +1,24 @@
+# PowerSync sync rules — membership-scoped.
+#
+# A token streams rows ONLY for Spaces the Account belongs to. Scoping is by
+# Space membership, never by raw account id (CONTEXT.md: "Sync rules scope data
+# by Space membership, not by Account").
+#
+# request.user_id() is the JWT `sub`, which the auth service sets to the
+# Account id. The parameter query turns each of the Account's memberships into a
+# bucket parameter (space_id); every data query filters by that parameter, so no
+# row from a Space the Account is not a member of is ever synced.
+bucket_definitions:
+  user_spaces:
+    # One bucket per Space the Account is a *current* member of. A soft-deleted
+    # membership (deleted_at set) means the Account no longer belongs, so the
+    # bucket disappears and its rows stop streaming to that Device.
+    parameters: SELECT space_id FROM space_members WHERE account_id = request.user_id() AND deleted_at IS NULL
+    data:
+      # Soft-deleted rows are filtered here so a delete propagates as a REMOVE:
+      # the row leaves the bucket and PowerSync tells the Device to drop it
+      # locally (offline-first tombstone propagation — ADR-0005). History is
+      # still retained in Postgres; it just stops syncing.
+      - SELECT * FROM spaces WHERE id = bucket.space_id AND deleted_at IS NULL
+      - SELECT * FROM space_members WHERE space_id = bucket.space_id AND deleted_at IS NULL
+      - SELECT * FROM tasks WHERE space_id = bucket.space_id AND deleted_at IS NULL

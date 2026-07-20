@@ -32,6 +32,33 @@ Concretely:
 2. Build the feature, keeping the app running.
 3. Verify the acceptance criteria on the device, and record what you observed — with timings where the criterion is about sync latency.
 
+## Running on a physical device
+
+The defaults in `app/src/config.ts` target an **emulator** (`10.0.2.2` is the emulator's alias for the host). On a physical device that address resolves to nothing, and the host firewall may well block the Server ports even over LAN — the symptom is `Failed to create websocket connection … after 10000ms` while Metro on 8081 works fine.
+
+`adb reverse` avoids both problems by tunnelling over USB, so the phone can use `localhost`:
+
+```sh
+adb reverse tcp:8081 tcp:8081   # Metro
+adb reverse tcp:8080 tcp:8080   # PowerSync
+adb reverse tcp:6060 tcp:6060   # auth
+EXPO_PUBLIC_AUTH_URL=http://localhost:6060 \
+EXPO_PUBLIC_POWERSYNC_URL=http://localhost:8080 \
+  npx expo start --dev-client
+```
+
+The forwards are dropped when the device disconnects — re-run them after replugging.
+
+Two more things worth knowing when driving a device headlessly:
+
+- **`PSYNC_S2103 JWT has expired`** on launch is #16 (no token re-issue), not a regression. Sign out and back in.
+- To bundle without the app, request it over HTTP. In this workspace Metro's server root is the **repo root**, not `app/`, so the path is `/app/index.bundle`, not `/index.bundle`:
+  ```sh
+  curl -s -o /dev/null -w '%{http_code}\n' \
+    'http://localhost:8081/app/index.bundle?platform=android&dev=true&minify=false'
+  ```
+  A resolution failure returns HTTP 404 with a JSON body naming the module — which is how a Metro monorepo misconfiguration surfaces.
+
 ## Recording the evidence
 
 When closing an app ticket, comment on the issue with what was actually observed on the device, not what the tests report. State the device, the steps, and the outcome per criterion.

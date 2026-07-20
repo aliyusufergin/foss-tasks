@@ -1,0 +1,21 @@
+{
+  "//": "Emits ESM + .d.ts to dist/. NodeNext so relative imports keep their .js extension in the output — that is what lets services/* (NodeNext) and Metro consume the same build. Metro rejects the .js->.ts mapping, so it must never see this source, only dist/.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "sourceMap": true
+  },
+  "include": ["src"],
+  "exclude": ["dist", "node_modules", "test"]
+}

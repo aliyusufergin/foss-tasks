@@ -1,3 +1,4 @@
+import type { OrderableRow } from "@foss-tasks/domain";
 import type { SqlDatabase } from "./migrations/sql";
 
 /**
@@ -10,15 +11,15 @@ import type { SqlDatabase } from "./migrations/sql";
  * update, and ordering is by the fractional-index `order_key`.
  */
 
-export interface TaskRow {
-  id: string;
-  space_id: string;
+/**
+ * `OrderableRow` carries the offline-first columns every reorderable syncable
+ * row has (`id`, `space_id`, `updated_at`, `deleted_at`, `order_key`); only the
+ * Task-specific columns are declared here.
+ */
+export interface TaskRow extends OrderableRow {
   title: string;
   status: string;
-  order_key: string;
   created_at: string;
-  updated_at: string;
-  deleted_at: string | null;
 }
 
 /** A locally-created Task: every column except the tombstone, which starts unset. */

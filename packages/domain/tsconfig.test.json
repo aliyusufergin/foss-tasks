@@ -1,0 +1,12 @@
+{
+  "//": "Typechecks src + test together. The emitting project (tsconfig.json) excludes test/ so tests never land in dist/, which would otherwise leave them typechecked by nothing — they were covered by app/tsconfig.seams.json before the move. Two inherited settings have to be restated: `exclude` filters `include` rather than being overridden by it, and `rootDir` is widened to the package root so test/ is allowed in the program (harmless, since this project emits nothing).",
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "declaration": false,
+    "sourceMap": false,
+    "rootDir": "."
+  },
+  "exclude": ["dist", "node_modules"],
+  "include": ["src", "test"]
+}

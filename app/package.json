@@ -14,15 +14,17 @@
     "typecheck:app": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@op-engineering/op-sqlite": "^11.4.9",
     "@powersync/op-sqlite": "^0.5.0",
     "@powersync/react": "^1.5.0",
     "@powersync/react-native": "^1.20.0",
     "expo": "~52.0.0",
+    "expo-build-properties": "~0.13.3",
     "expo-dev-client": "~5.0.0",
     "expo-secure-store": "~14.0.0",
     "fractional-indexing": "^4.0.0",
     "react": "18.3.1",
-    "react-native": "0.76.5",
+    "react-native": "0.76.9",
     "react-native-get-random-values": "~1.11.0",
     "uuid": "^11.0.0"
   },

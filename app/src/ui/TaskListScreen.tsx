@@ -1,11 +1,7 @@
 import { useQuery, useStatus } from "@powersync/react";
-import { useState } from "react";
-import { Button, FlatList, StyleSheet, Text, TextInput, View } from "react-native";
-import { usePowerSync } from "@powersync/react";
-import { newId } from "../domain/ids.js";
-import { orderKeyAfter } from "../domain/order-key.js";
-import type { TaskRow } from "../data/queries.js";
-import { ACTIVE_TASKS_SQL, insertTask, softDeleteTask } from "../data/queries.js";
+import { Button, FlatList, StyleSheet, Text, View } from "react-native";
+import type { TaskRow } from "../data/queries";
+import { ACTIVE_TASKS_SQL } from "../data/queries";
 
 interface Props {
   spaceId: string;
@@ -13,33 +9,25 @@ interface Props {
 }
 
 /**
- * The walking-skeleton task list: live query over the on-device PowerSync store,
- * scoped to the Personal Space, tombstones hidden, in fractional-index order.
- * Proves foreground live streaming (rows appear as the Server syncs them) and
- * exercises the offline-first foundations end-to-end through the data seam.
+ * The walking-skeleton task list: a live query over the on-device PowerSync
+ * store, scoped to the Personal Space, tombstones hidden, in fractional-index
+ * order. Rows appear as the Server streams them, which is what this ticket sets
+ * out to prove.
+ *
+ * **Read-only by design.** v1 has no backend write endpoint, and PowerSync gives
+ * a client no supported download-only mode: a local write would sit in the CRUD
+ * queue, and acknowledging it without uploading silently destroys it on the next
+ * checkpoint (see docs/research/powersync-client-contracts-2026-07.md). Rather
+ * than offer a control that loses data, the app offers no local writes until the
+ * write path exists. Creating and editing Tasks lands with that ticket.
  */
 export function TaskListScreen({ spaceId, onSignOut }: Props): JSX.Element {
-  const db = usePowerSync();
   const status = useStatus();
-  const [title, setTitle] = useState("");
-
   const { data: tasks } = useQuery<TaskRow>(ACTIVE_TASKS_SQL, [spaceId]);
 
-  async function add(): Promise<void> {
-    if (title.trim() === "") return;
-    const last = tasks.at(-1)?.order_key ?? null;
-    const now = new Date().toISOString();
-    await insertTask(db, {
-      id: newId(),
-      space_id: spaceId,
-      title: title.trim(),
-      status: "open",
-      order_key: orderKeyAfter(last),
-      created_at: now,
-      updated_at: now,
-    });
-    setTitle("");
-  }
+  // downloadError is where an expired/rejected token surfaces — not uploadError.
+  const { downloadError, uploadError } = status.dataFlowStatus;
+  const error = downloadError ?? uploadError;
 
   return (
     <View style={styles.container}>
@@ -47,26 +35,20 @@ export function TaskListScreen({ spaceId, onSignOut }: Props): JSX.Element {
         <Text style={styles.status}>{status.connected ? "● live" : "○ offline"}</Text>
         <Button title="Sign out" onPress={onSignOut} />
       </View>
-      <View style={styles.addRow}>
-        <TextInput
-          style={styles.input}
-          placeholder="New task"
-          value={title}
-          onChangeText={setTitle}
-          onSubmitEditing={() => void add()}
-        />
-        <Button title="Add" onPress={() => void add()} />
-      </View>
+
+      {error !== undefined && <Text style={styles.error}>sync error: {error.message}</Text>}
+
+      <Text style={styles.note}>
+        Read-only until the write path ships — Tasks stream in from the Server.
+      </Text>
+
       <FlatList
         data={tasks}
         keyExtractor={(t) => t.id}
         renderItem={({ item }) => (
           <View style={styles.row}>
             <Text style={styles.rowTitle}>{item.title}</Text>
-            <Button
-              title="Delete"
-              onPress={() => void softDeleteTask(db, item.id, new Date().toISOString())}
-            />
+            <Text style={styles.rowMeta}>{item.status}</Text>
           </View>
         )}
         ListEmptyComponent={<Text style={styles.empty}>No tasks yet.</Text>}
@@ -79,8 +61,8 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, paddingTop: 48, gap: 12 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   status: { fontSize: 14, color: "#555" },
-  addRow: { flexDirection: "row", gap: 8, alignItems: "center" },
-  input: { flex: 1, borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12 },
+  note: { fontSize: 12, color: "#888" },
+  error: { fontSize: 12, color: "#b00020" },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -90,5 +72,6 @@ const styles = StyleSheet.create({
     borderBottomColor: "#eee",
   },
   rowTitle: { fontSize: 16 },
+  rowMeta: { fontSize: 12, color: "#999" },
   empty: { textAlign: "center", color: "#999", marginTop: 24 },
 });

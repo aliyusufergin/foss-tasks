@@ -1,4 +1,4 @@
-import type { SqlDatabase } from "./migrations/sql.js";
+import type { SqlDatabase } from "./migrations/sql";
 
 /**
  * The local data-layer read/write seam (ADR-0004 discipline applied to storage).

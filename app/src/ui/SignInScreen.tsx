@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from "react-native";
-import type { AuthClient, Session } from "../auth/client.js";
+import type { AuthClient, Session } from "../auth/client";
 
 interface Props {
   authClient: AuthClient;

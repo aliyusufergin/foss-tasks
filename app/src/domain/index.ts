@@ -1,11 +1,11 @@
-export { newId, isValidId } from "./ids.js";
+export { newId, isValidId } from "./ids";
 export {
   firstOrderKey,
   orderKeyBetween,
   orderKeyAfter,
   orderKeyBefore,
   orderKeys,
-} from "./order-key.js";
-export { pickLwwWinner, mergeLww } from "./lww.js";
-export type { Versioned } from "./lww.js";
-export type { SyncableRow, OrderableRow } from "./row.js";
+} from "./order-key";
+export { pickLwwWinner, mergeLww } from "./lww";
+export type { Versioned } from "./lww";
+export type { SyncableRow, OrderableRow } from "./row";

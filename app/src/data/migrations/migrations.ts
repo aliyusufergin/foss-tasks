@@ -1,4 +1,4 @@
-import type { SqlDatabase } from "./sql.js";
+import type { SqlDatabase } from "./sql";
 
 /**
  * One forward-only, on-device schema migration (ADR-0005 §5). Migrations run in

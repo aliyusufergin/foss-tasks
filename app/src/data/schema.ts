@@ -1,5 +1,5 @@
 import { column, Schema, Table, type BaseColumnType } from "@powersync/react-native";
-import { SYNCED_TABLES, type ColumnType, type TableModel } from "./model.js";
+import { SYNCED_TABLES, type ColumnType, type TableModel } from "./model";
 
 /**
  * The PowerSync client schema — the on-device SQLite tables PowerSync

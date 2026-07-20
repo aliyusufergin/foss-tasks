@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { Session } from "../../src/auth/client.js";
-import { type SecureKeyValueStore, TokenStore } from "../../src/auth/token-store.js";
+import type { Session } from "../../src/auth/client";
+import { type SecureKeyValueStore, TokenStore } from "../../src/auth/token-store";
 
 class MemoryStore implements SecureKeyValueStore {
   private readonly map = new Map<string, string>();

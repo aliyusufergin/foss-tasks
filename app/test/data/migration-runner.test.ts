@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { Migration } from "../../src/data/migrations/migrations.js";
+import type { Migration } from "../../src/data/migrations/migrations";
 import {
   currentSchemaVersion,
   runMigrations,
   SCHEMA_VERSION_TABLE,
-} from "../../src/data/migrations/runner.js";
-import type { SqlDatabase } from "../../src/data/migrations/sql.js";
-import { TestSqliteDatabase } from "../support/sqlite-db.js";
+} from "../../src/data/migrations/runner";
+import type { SqlDatabase } from "../../src/data/migrations/sql";
+import { TestSqliteDatabase } from "../support/sqlite-db";
 
 async function tableExists(db: SqlDatabase, name: string): Promise<boolean> {
   const row = await db.getOptional<{ name: string }>(

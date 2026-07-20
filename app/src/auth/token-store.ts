@@ -1,4 +1,4 @@
-import type { Session } from "./client.js";
+import type { Session } from "./client";
 
 /**
  * Persists the held {@link Session} so a returning user stays signed in across

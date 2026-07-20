@@ -1,5 +1,5 @@
-import { MIGRATIONS, type Migration } from "./migrations.js";
-import type { SqlDatabase } from "./sql.js";
+import { MIGRATIONS, type Migration } from "./migrations";
+import type { SqlDatabase } from "./sql";
 
 /** Table holding the schema version marker (ADR-0005 §5). */
 export const SCHEMA_VERSION_TABLE = "_app_schema_version";

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { AuthClient, type FetchLike } from "../../src/auth/client.js";
+import { AuthClient, type FetchLike } from "../../src/auth/client";
 
 const TOKEN_BODY = {
   access_token: "jwt.abc.def",

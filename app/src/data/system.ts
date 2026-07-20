@@ -1,9 +1,9 @@
 import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
 import { PowerSyncDatabase } from "@powersync/react-native";
-import { AppConnector } from "./connector.js";
-import { runMigrations } from "./migrations/runner.js";
-import { AppSchema } from "./schema.js";
-import type { TokenStore } from "../auth/token-store.js";
+import { AppConnector } from "./connector";
+import { runMigrations } from "./migrations/runner";
+import { AppSchema } from "./schema";
+import type { TokenStore } from "../auth/token-store";
 
 const DB_FILENAME = "foss-tasks.db";
 
@@ -41,7 +41,13 @@ export class System {
     await this.powersync.connect(this.connector);
   }
 
-  async disconnect(): Promise<void> {
+  /**
+   * Sign-out: stop syncing AND wipe the local replica, so the next Account on
+   * this Device never sees the previous one's data. This is destructive — it is
+   * NOT a plain "pause syncing". For that, call `powersync.disconnect()`
+   * directly, which leaves the local database intact.
+   */
+  async signOutAndClear(): Promise<void> {
     await this.powersync.disconnectAndClear();
   }
 }

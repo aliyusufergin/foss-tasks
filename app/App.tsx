@@ -1,13 +1,13 @@
 import { PowerSyncContext } from "@powersync/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, Text, View } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import { AuthClient, type Session } from "./src/auth/client.js";
-import { type SecureKeyValueStore, TokenStore } from "./src/auth/token-store.js";
-import { config } from "./src/config.js";
-import { System } from "./src/data/system.js";
-import { SignInScreen } from "./src/ui/SignInScreen.js";
-import { TaskListScreen } from "./src/ui/TaskListScreen.js";
+import { AuthClient, type Session } from "./src/auth/client";
+import { type SecureKeyValueStore, TokenStore } from "./src/auth/token-store";
+import { config } from "./src/config";
+import { System } from "./src/data/system";
+import { SignInScreen } from "./src/ui/SignInScreen";
+import { TaskListScreen } from "./src/ui/TaskListScreen";
 
 // Adapt Expo SecureStore's *Async API to the store port.
 const secureStore: SecureKeyValueStore = {
@@ -26,6 +26,7 @@ const authClient = new AuthClient({ baseUrl: config.authUrl });
  */
 export default function App(): JSX.Element {
   const [ready, setReady] = useState(false);
+  const [bootError, setBootError] = useState<Error | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const systemRef = useRef<System | null>(null);
 
@@ -37,13 +38,25 @@ export default function App(): JSX.Element {
 
   useEffect(() => {
     void (async () => {
-      await system.init();
-      const held = await tokenStore.load();
-      if (held) {
-        setSession(held);
-        await system.connect();
+      try {
+        console.log("[boot] opening local database…");
+        await system.init();
+        console.log("[boot] database ready, restoring session…");
+        const held = await tokenStore.load();
+        if (held) {
+          setSession(held);
+          console.log("[boot] session restored, connecting to sync…");
+          await system.connect();
+        }
+        console.log("[boot] ready");
+      } catch (err) {
+        // Without this the promise rejects unobserved and the app sits on the
+        // spinner forever with nothing on screen to explain why.
+        console.error("[boot] startup failed", err);
+        setBootError(err instanceof Error ? err : new Error(String(err)));
+      } finally {
+        setReady(true);
       }
-      setReady(true);
     })();
   }, [system]);
 
@@ -54,7 +67,7 @@ export default function App(): JSX.Element {
   }
 
   async function onSignOut(): Promise<void> {
-    await system.disconnect();
+    await system.signOutAndClear();
     await tokenStore.clear();
     setSession(null);
   }
@@ -63,6 +76,15 @@ export default function App(): JSX.Element {
     return (
       <View style={{ flex: 1, justifyContent: "center" }}>
         <ActivityIndicator />
+      </View>
+    );
+  }
+
+  if (bootError !== null) {
+    return (
+      <View style={{ flex: 1, justifyContent: "center", padding: 24, gap: 8 }}>
+        <Text style={{ fontSize: 18, fontWeight: "600" }}>Couldn&apos;t start</Text>
+        <Text selectable>{bootError.message}</Text>
       </View>
     );
   }

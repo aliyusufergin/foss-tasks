@@ -5,7 +5,7 @@ import {
   orderKeyBefore,
   orderKeyBetween,
   orderKeys,
-} from "../../src/domain/order-key.js";
+} from "../../src/domain/order-key";
 
 /** Simulate a list as (id, order_key) pairs sorted the way the data layer sorts. */
 function sortedIds(rows: Array<{ id: string; order_key: string }>): string[] {

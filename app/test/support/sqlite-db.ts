@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
-import { createIndexSql, createTableSql, SYNCED_TABLES } from "../../src/data/model.js";
-import type { SqlDatabase } from "../../src/data/migrations/sql.js";
+import { createIndexSql, createTableSql, SYNCED_TABLES } from "../../src/data/model";
+import type { SqlDatabase } from "../../src/data/migrations/sql";
 
 // Loaded via createRequire so the test bundler doesn't try to transform this
 // newer built-in (Vite's module list predates `node:sqlite`).

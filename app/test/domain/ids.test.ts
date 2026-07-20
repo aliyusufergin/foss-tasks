@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isValidId, newId } from "../../src/domain/ids.js";
+import { isValidId, newId } from "../../src/domain/ids";
 
 describe("newId", () => {
   it("mints a valid UUID", () => {

@@ -1,14 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { newId } from "../../src/domain/ids.js";
-import { orderKeyBetween, orderKeys } from "../../src/domain/order-key.js";
+import { newId } from "../../src/domain/ids";
+import { orderKeyBetween, orderKeys } from "../../src/domain/order-key";
 import {
   insertTask,
   listActiveTasks,
   moveTask,
   softDeleteTask,
   type NewTask,
-} from "../../src/data/queries.js";
-import { createSyncedTables, TestSqliteDatabase } from "../support/sqlite-db.js";
+} from "../../src/data/queries";
+import { createSyncedTables, TestSqliteDatabase } from "../support/sqlite-db";
 
 const SPACE = "11111111-1111-4111-8111-111111111111";
 const OTHER_SPACE = "22222222-2222-4222-8222-222222222222";

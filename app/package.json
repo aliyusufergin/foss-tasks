@@ -14,8 +14,8 @@
     "typecheck:app": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@op-engineering/op-sqlite": "^11.4.9",
-    "@powersync/op-sqlite": "^0.5.0",
+    "@op-engineering/op-sqlite": "^15.2.14",
+    "@powersync/op-sqlite": "^0.9.15",
     "@powersync/react": "^1.5.0",
     "@powersync/react-native": "^1.20.0",
     "expo": "~52.0.0",

@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "foss-tasks",
+    "slug": "foss-tasks",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "foss-tasks",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "app.foss-tasks.client"
+    },
+    "android": {
+      "package": "app.foss_tasks.client"
+    },
+    "plugins": [
+      "expo-dev-client",
+      "expo-secure-store",
+      "@powersync/op-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}

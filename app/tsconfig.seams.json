@@ -1,0 +1,26 @@
+{
+  "//": "Node-safe seams (domain + data-layer logic + auth client) and their tests. Runs in CI and locally without the React Native/Expo toolchain installed. The full app typechecks via tsconfig.json (npm run typecheck:app) on a dev machine.",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "noImplicitOverride": true,
+    "verbatimModuleSyntax": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/domain/**/*.ts",
+    "src/data/model.ts",
+    "src/data/migrations/**/*.ts",
+    "src/data/queries.ts",
+    "src/auth/client.ts",
+    "src/auth/token-store.ts",
+    "test/**/*.ts"
+  ]
+}

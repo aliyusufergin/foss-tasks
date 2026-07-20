@@ -55,6 +55,10 @@ CREATE TABLE tasks (
   space_id    uuid NOT NULL REFERENCES spaces (id),
   title       text NOT NULL,
   status      text NOT NULL DEFAULT 'open' CHECK (status IN ('open', 'done')),
+  -- Fractional-index manual ordering key (ADR-0005 §4). Lives on the source of
+  -- truth so a reorder made on one Device syncs to the others; without it the
+  -- Device-side order_key would be a local-only artifact any resync erases.
+  order_key   text,
   created_at  timestamptz NOT NULL DEFAULT now(),
   updated_at  timestamptz NOT NULL DEFAULT now(),
   deleted_at  timestamptz

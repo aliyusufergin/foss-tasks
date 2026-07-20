@@ -1,0 +1,43 @@
+{
+  "name": "@foss-tasks/app",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Expo dev-client app: offline-first PowerSync client + shared domain seam",
+  "main": "index.ts",
+  "scripts": {
+    "start": "expo start --dev-client",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc -p tsconfig.seams.json --noEmit",
+    "typecheck:app": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@powersync/op-sqlite": "^0.5.0",
+    "@powersync/react": "^1.5.0",
+    "@powersync/react-native": "^1.20.0",
+    "expo": "~52.0.0",
+    "expo-dev-client": "~5.0.0",
+    "expo-secure-store": "~14.0.0",
+    "fractional-indexing": "^4.0.0",
+    "react": "18.3.1",
+    "react-native": "0.76.5",
+    "react-native-get-random-values": "~1.11.0",
+    "uuid": "^11.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.25.0",
+    "@types/node": "^22.10.0",
+    "@types/react": "~18.3.12",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  },
+  "overrides": {
+    "@powersync/common": "1.57.2"
+  },
+  "allowScripts": {
+    "esbuild@0.21.5": true
+  }
+}

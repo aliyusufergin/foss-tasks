@@ -1,0 +1,21 @@
+{
+  "//": "Full app typecheck (React Native + Expo). Needs the RN toolchain installed (npm install on a dev machine); run via `npm run typecheck:app`. CI and local seam checks use tsconfig.seams.json, which needs no native toolchain.",
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "jsx": "react-jsx",
+    "moduleResolution": "Bundler",
+    "verbatimModuleSyntax": true,
+    "noUncheckedIndexedAccess": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": [
+    "index.ts",
+    "App.tsx",
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "app.config.ts"
+  ],
+  "exclude": ["node_modules", "test"]
+}

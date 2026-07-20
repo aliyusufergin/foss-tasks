@@ -31,7 +31,22 @@ export default function App(): JSX.Element {
   const systemRef = useRef<System | null>(null);
 
   const system = useMemo(() => {
-    const s = new System({ powerSyncUrl: config.powerSyncUrl, tokenStore });
+    const s = new System({
+      powerSyncUrl: config.powerSyncUrl,
+      tokenStore,
+      authClient,
+      // The session outlived its max age while the app was running. Treat it
+      // exactly like a sign-out — the local replica goes too, so the next
+      // Account on this Device cannot see this one's data — and send the user
+      // back to sign-in. Not awaited: the connector calls this synchronously.
+      onSessionExpired: () => {
+        console.warn("[sync] session expired; signing out");
+        setSession(null);
+        void s.signOutAndClear().catch((err: unknown) => {
+          console.error("[sync] failed to clear local data after expiry", err);
+        });
+      },
+    });
     systemRef.current = s;
     return s;
   }, []);

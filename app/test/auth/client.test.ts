@@ -63,6 +63,45 @@ describe("AuthClient", () => {
     expect(result.ok).toBe(true);
   });
 
+  it("trades the held token for a fresh Session", async () => {
+    const fetch = fetchReturning(200, TOKEN_BODY);
+    const client = new AuthClient({ baseUrl: "http://auth:6060", fetch });
+    const result = await client.refresh("held.jwt.token");
+
+    expect(fetch).toHaveBeenCalledWith("http://auth:6060/auth/token", {
+      method: "POST",
+      headers: { authorization: "Bearer held.jwt.token" },
+    });
+    expect(result).toEqual({
+      ok: true,
+      session: {
+        accessToken: "jwt.abc.def",
+        tokenType: "Bearer",
+        expiresIn: 3600,
+        accountId: "acc-1",
+        personalSpaceId: "space-1",
+      },
+    });
+  });
+
+  // The connector keys off this: session_expired means sign out, anything else
+  // is transient and must not throw the user out of the app.
+  it("maps 401 on refresh to session_expired, not invalid_credentials", async () => {
+    const client = new AuthClient({ baseUrl: "http://x", fetch: fetchReturning(401, {}) });
+    expect(await client.refresh("held.jwt.token")).toEqual({
+      ok: false,
+      error: "session_expired",
+    });
+  });
+
+  it("maps a server error on refresh to unexpected_response", async () => {
+    const client = new AuthClient({ baseUrl: "http://x", fetch: fetchReturning(503, {}) });
+    expect(await client.refresh("held.jwt.token")).toEqual({
+      ok: false,
+      error: "unexpected_response",
+    });
+  });
+
   it("flags a malformed success body", async () => {
     const client = new AuthClient({
       baseUrl: "http://x",

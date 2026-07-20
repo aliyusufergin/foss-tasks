@@ -16,6 +16,7 @@ async function main(): Promise<void> {
     issuer: config.issuer,
     audience: config.audience,
     tokenTtlSeconds: config.tokenTtlSeconds,
+    sessionMaxAgeSeconds: config.sessionMaxAgeSeconds,
   });
 
   const shutdown = async (signal: string) => {

@@ -36,6 +36,8 @@ export interface Credentials {
 
 export type AuthError =
   | "invalid_credentials"
+  /** The held session is past its max age (or was rejected): sign in again. */
+  | "session_expired"
   | "email_taken"
   | "invalid_request"
   | "unexpected_response";
@@ -55,19 +57,49 @@ export class AuthClient {
 
   /** Sign in an existing Account. */
   login(creds: Credentials): Promise<AuthResult> {
-    return this.post("/auth/login", creds);
+    return this.post("/auth/login", { creds });
   }
 
   /** Register a new Account (also returns a session). */
   register(creds: Credentials): Promise<AuthResult> {
-    return this.post("/auth/register", creds);
+    return this.post("/auth/register", { creds });
   }
 
-  private async post(path: string, creds: Credentials): Promise<AuthResult> {
+  /**
+   * Trades the held (possibly expired) access token for a fresh one, so
+   * `fetchCredentials()` can hand PowerSync a live token on every call rather
+   * than replaying a stale one.
+   *
+   * A `401` here means the session is genuinely over — past the service's
+   * session max age, or issued by a key that no longer verifies — and is
+   * reported as `session_expired` rather than `invalid_credentials`, because
+   * the caller must sign the user out for that and only that. Every other
+   * failure is transient and must not.
+   *
+   * Network failures reject, as with the other methods.
+   */
+  refresh(accessToken: string): Promise<AuthResult> {
+    return this.post("/auth/token", {
+      bearer: accessToken,
+      unauthorized: "session_expired",
+    });
+  }
+
+  private async post(
+    path: string,
+    opts: {
+      creds?: Credentials;
+      bearer?: string;
+      /** What a 401 from this endpoint means. Defaults to bad credentials. */
+      unauthorized?: AuthError;
+    },
+  ): Promise<AuthResult> {
     const res = await this.fetch(`${this.baseUrl}${path}`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify(creds),
+      headers: opts.bearer
+        ? { authorization: `Bearer ${opts.bearer}` }
+        : { "content-type": "application/json" },
+      ...(opts.creds ? { body: JSON.stringify(opts.creds) } : {}),
     });
 
     if (res.status === 200 || res.status === 201) {
@@ -76,7 +108,9 @@ export class AuthClient {
         ? { ok: true, session }
         : { ok: false, error: "unexpected_response" };
     }
-    if (res.status === 401) return { ok: false, error: "invalid_credentials" };
+    if (res.status === 401) {
+      return { ok: false, error: opts.unauthorized ?? "invalid_credentials" };
+    }
     if (res.status === 409) return { ok: false, error: "email_taken" };
     if (res.status === 400) return { ok: false, error: "invalid_request" };
     return { ok: false, error: "unexpected_response" };

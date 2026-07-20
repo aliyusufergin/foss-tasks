@@ -15,11 +15,23 @@ export class PgAuthRepo implements AuthRepo {
   constructor(private readonly pool: Pool) {}
 
   async findAccountByEmail(email: string): Promise<AccountRecord | null> {
+    return this.findAccountBy("a.email", email);
+  }
+
+  async findAccountById(id: string): Promise<AccountRecord | null> {
+    return this.findAccountBy("a.id", id);
+  }
+
+  /** Shared lookup body; `column` is a literal from this class, never input. */
+  private async findAccountBy(
+    column: "a.id" | "a.email",
+    value: string,
+  ): Promise<AccountRecord | null> {
     const { rows } = await this.pool.query<AccountRow>(
       `SELECT a.id, a.email, a.password_hash, a.personal_space_id
          FROM accounts a
-        WHERE a.email = $1`,
-      [email],
+        WHERE ${column} = $1`,
+      [value],
     );
     const row = rows[0];
     if (!row) return null;

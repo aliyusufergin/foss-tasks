@@ -3,17 +3,28 @@ import type {
   PowerSyncBackendConnector,
   PowerSyncCredentials,
 } from "@powersync/react-native";
+import type { AuthClient } from "../auth/client";
 import type { TokenStore } from "../auth/token-store";
 
 /**
  * What both the {@link AppConnector} and the `System` that owns it need: where
- * the Server is, and the held JWT. One type rather than two identical ones,
- * since `System` forwards its config straight through to the connector.
+ * the Server is, and how to obtain a live JWT. One type rather than two
+ * identical ones, since `System` forwards its config straight through to the
+ * connector.
  */
 export interface SyncConfig {
   /** PowerSync Service URL, e.g. `http://10.0.2.2:8080`. */
   powerSyncUrl: string;
   tokenStore: TokenStore;
+  /** Used to trade the held token for a fresh one on every credential fetch. */
+  authClient: AuthClient;
+  /**
+   * Called when the held session is past saving and the user has to sign in
+   * again. The app root uses it to drop back to the sign-in screen. It is
+   * invoked synchronously, so the handler must not block — kick off anything
+   * slow (like clearing the local replica) without awaiting it here.
+   */
+  onSessionExpired?: () => void;
 }
 
 /**
@@ -25,19 +36,47 @@ export class AppConnector implements PowerSyncBackendConnector {
   constructor(private readonly config: SyncConfig) {}
 
   /**
-   * KNOWN GAP: this returns the *stored* token, but the interface contract is to
-   * always fetch a **fresh** one — PowerSync calls this on connect, ~30s before
-   * expiry, on expiry, on a 401, and on a WebSocket auth error. With a 1h TTL
-   * and no re-issue endpoint on the auth service, sync therefore dies about an
-   * hour after sign-in and retries every 5s forever. The fix is a token re-issue
-   * endpoint that this method calls; tracked separately.
+   * Mints a **fresh** token on every call, which is what the interface actually
+   * asks for — PowerSync calls this on connect, ~30s before expiry, on expiry,
+   * on an HTTP 401, and on a WebSocket `PSYNC_S21`, and all five route through
+   * `invalidateCredentials()`. Handing back a stored token means the answer
+   * never changes, so an expired one puts the client in a fixed 5s retry loop
+   * forever (`DEFAULT_RETRY_DELAY_MS` — not exponential backoff).
+   *
+   * The two failure modes are distinct and the JSDoc on the interface is
+   * explicit about which is which:
+   *
+   * - **`null` means signed out.** Only a `401` from the re-issue endpoint earns
+   *   this, i.e. the session is past its max age. The held token is cleared and
+   *   the app is told to show sign-in.
+   * - **Throwing means try again.** Network failure or a server-side error is
+   *   transient; the held token stays put and the retry loop handles it.
+   *
+   * Getting that backwards would either sign people out on a flaky connection
+   * or spin forever on a session that is genuinely over.
    *
    * Note the failure surfaces on `SyncStatus.downloadError`, not `uploadError`.
    */
   async fetchCredentials(): Promise<PowerSyncCredentials | null> {
-    const session = await this.config.tokenStore.load();
-    if (session === null) return null;
-    return { endpoint: this.config.powerSyncUrl, token: session.accessToken };
+    const held = await this.config.tokenStore.load();
+    if (held === null) return null;
+
+    const result = await this.config.authClient.refresh(held.accessToken);
+
+    if (!result.ok) {
+      if (result.error !== "session_expired") {
+        throw new Error(`[sync] could not refresh credentials: ${result.error}`);
+      }
+      await this.config.tokenStore.clear();
+      this.config.onSessionExpired?.();
+      return null;
+    }
+
+    await this.config.tokenStore.save(result.session);
+    return {
+      endpoint: this.config.powerSyncUrl,
+      token: result.session.accessToken,
+    };
   }
 
   /**

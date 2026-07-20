@@ -14,6 +14,13 @@ export interface AccountRecord {
 export interface AuthRepo {
   findAccountByEmail(email: string): Promise<AccountRecord | null>;
 
+  /**
+   * Looks up an Account by id. Used when re-issuing a token, so that a deleted
+   * Account stops getting fresh tokens and so the re-issued token carries the
+   * Account's *current* Personal Space rather than whatever the held token said.
+   */
+  findAccountById(id: string): Promise<AccountRecord | null>;
+
   createAccountWithPersonalSpace(input: {
     accountId: string;
     email: string;

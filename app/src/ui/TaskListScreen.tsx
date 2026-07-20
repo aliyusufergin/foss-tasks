@@ -3,6 +3,9 @@ import { Button, FlatList, StyleSheet, Text, View } from "react-native";
 import type { TaskRow } from "../data/queries";
 import { ACTIVE_TASKS_SQL } from "../data/queries";
 
+/** Alert red for sync failure states, shared until ADR-0006 theming lands. */
+const DANGER = "#b00020";
+
 interface Props {
   spaceId: string;
   onSignOut: () => void;
@@ -26,13 +29,21 @@ export function TaskListScreen({ spaceId, onSignOut }: Props): JSX.Element {
   const { data: tasks } = useQuery<TaskRow>(ACTIVE_TASKS_SQL, [spaceId]);
 
   // downloadError is where an expired/rejected token surfaces — not uploadError.
+  // A UI watching only uploadError would show a cheerful "offline" while sync
+  // was in fact dead.
   const { downloadError, uploadError } = status.dataFlowStatus;
   const error = downloadError ?? uploadError;
+
+  // "offline" and "sync is failing" look identical to a user but mean opposite
+  // things: one resolves itself when the tunnel comes back, the other does not.
+  const stalled = downloadError !== undefined && !status.connected;
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.status}>{status.connected ? "● live" : "○ offline"}</Text>
+        <Text style={[styles.status, stalled && styles.statusStalled]}>
+          {stalled ? "▲ sync stopped" : status.connected ? "● live" : "○ offline"}
+        </Text>
         <Button title="Sign out" onPress={onSignOut} />
       </View>
 
@@ -61,8 +72,11 @@ const styles = StyleSheet.create({
   container: { flex: 1, padding: 16, paddingTop: 48, gap: 12 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   status: { fontSize: 14, color: "#555" },
+  // Same alert red as `error` below. Theming (ADR-0006) isn't wired into this
+  // skeleton screen yet; when it is, both read one token.
+  statusStalled: { color: DANGER, fontWeight: "600" },
   note: { fontSize: 12, color: "#888" },
-  error: { fontSize: 12, color: "#b00020" },
+  error: { fontSize: 12, color: DANGER },
   row: {
     flexDirection: "row",
     justifyContent: "space-between",

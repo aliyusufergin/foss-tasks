@@ -1,8 +1,14 @@
-import { exportJWK, importPKCS8 } from "jose";
+import { exportJWK, importJWK, importPKCS8 } from "jose";
 import type { JWK, KeyLike } from "jose";
 
 export interface SigningKey {
   privateKey: KeyLike;
+  /**
+   * The matching public key. PowerSync validates tokens out of band via the
+   * JWKS, but `POST /auth/token` has to verify a token this service issued
+   * without a round-trip to its own JWKS endpoint.
+   */
+  publicKey: KeyLike;
   kid: string;
   jwk: JWK;
 }
@@ -32,5 +38,6 @@ export async function loadSigningKey(
     extractable: true,
   });
   const jwk = toPublicJwk(await exportJWK(privateKey), kid);
-  return { privateKey, kid, jwk };
+  const publicKey = (await importJWK(jwk, "RS256")) as KeyLike;
+  return { privateKey, publicKey, kid, jwk };
 }

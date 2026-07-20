@@ -12,7 +12,8 @@ describe("loadConfig", () => {
     expect(cfg.port).toBe(6060);
     expect(cfg.issuer).toBe("foss-tasks-auth");
     expect(cfg.audience).toBe("powersync");
-    expect(cfg.tokenTtlSeconds).toBe(3600);
+    expect(cfg.tokenTtlSeconds).toBe(900);
+    expect(cfg.sessionMaxAgeSeconds).toBe(30 * 24 * 60 * 60);
   });
 
   it("un-escapes literal \\n in the private key PEM", () => {

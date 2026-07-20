@@ -31,6 +31,10 @@ export class InMemoryAuthRepo implements AuthRepo {
     return null;
   }
 
+  async findAccountById(id: string): Promise<AccountRecord | null> {
+    return this.accounts.get(id) ?? null;
+  }
+
   async createAccountWithPersonalSpace(input: {
     accountId: string;
     email: string;

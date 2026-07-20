@@ -21,6 +21,11 @@ strategy of its own; we **implement LWW as the server-side merge logic** (later 
 wins). Even in Group Spaces this is adequate — concurrent same-field edits by two members are
 rare (CRDT remains a future escape hatch if that proves inadequate).
 
+Sync rules scope **reads** only. A Device never writes to the source-of-truth database directly:
+writes go through an endpoint on the **API service**, which enforces Space membership on every
+operation and applies the LWW merge. Both the Device and that endpoint call the *same* merge and
+validation functions, so they cannot disagree about which version of a row survives (ADR-0008).
+
 **v1 scope:** the Space concept and schema exist from day one, but only Personal Spaces are
 exposed in the UI. Group Space UI (creating groups, inviting members, roles) ships in **v2** —
 the data model and sync rules are built to support it now so no migration is needed later.

@@ -1,0 +1,28 @@
+{
+  "name": "@foss-tasks/domain",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Pure domain logic shared by the Device and the backend write path (ADR-0004, ADR-0008 §11)",
+  "type": "module",
+  "//": "Consumed through `main`, not `exports`: Metro's package-exports support is behind a flag in RN 0.76, while `main` resolves everywhere. Ships compiled JS because raw TypeScript cannot satisfy both consumers — services/* use NodeNext (relative imports need a .js extension) and Metro rejects the .js->.ts mapping.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.test.json",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "fractional-indexing": "^4.0.0",
+    "uuid": "^11.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}

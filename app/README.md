@@ -8,13 +8,13 @@ membership-scoped rules from the v1 spec. This ticket establishes the
 
 ## Layout
 
+Pure domain logic no longer lives here. It moved to **`packages/domain`** at the
+workspace root (`@foss-tasks/domain`) so the backend write path can apply the
+*same* LWW merge the Device applies rather than a second copy of it — see
+ADR-0008 §11 and `metro.config.js`.
+
 ```
 src/
-  domain/          Pure, framework-agnostic domain logic (PRIMARY test seam, ADR-0004)
-    ids.ts           Client-generated UUID pks (ADR-0005 §1)
-    order-key.ts     Fractional-index ordering (ADR-0005 §4)
-    lww.ts           Last-write-wins merge (ADR-0005 §2)
-    row.ts           Base syncable / orderable row shapes
   data/            Local data layer (SECONDARY test seam)
     model.ts         Table shapes — single source of truth (no RN imports)
     migrations/      Forward-migration runner + schema version marker (ADR-0005 §5)
@@ -29,31 +29,44 @@ src/
 App.tsx / index.ts App root + entry                                        (RN)
 ```
 
-The **domain** and **data-layer logic** are written as pure functions over
-narrow ports (`SqlDatabase`, `fetch`, a secure key-value store), so they run and
-are tested in Node with no React Native toolchain — the discipline ADR-0004
-mandates so a future server-side path can reuse the same logic.
+The **data-layer logic** is written as pure functions over narrow ports
+(`SqlDatabase`, `fetch`, a secure key-value store), so it runs and is tested in
+Node with no React Native toolchain — the discipline ADR-0004 mandates so a
+future server-side path can reuse the same logic.
 
 ## The two test seams (runnable in CI)
 
-- **Domain-logic unit harness** — `test/domain/**`: ordering, LWW merge, id
-  generation. Pure, deterministic (time is injected, never read from the clock).
+- **Domain-logic unit harness** — now `packages/domain/test/**`: ordering, LWW
+  merge, id generation. Pure, deterministic (time is injected, never read from
+  the clock). Run it with `npm test -w @foss-tasks/domain`.
 - **Local data-layer integration harness** — `test/data/**`: the migration
   runner and query layer exercised against **real SQLite** (Node's built-in
   `node:sqlite`) behind the same `SqlDatabase` port the app uses against
   PowerSync. Asserts tombstones hide deleted rows, Space scoping, and
   fractional-index ordering.
 
+Install from the **repo root** — this is one npm workspace, and installing from
+inside `app/` will not link `@foss-tasks/domain`.
+
 ```sh
-npm install --legacy-peer-deps
-npm test              # both seams
-npm run typecheck     # Node-safe seams (tsconfig.seams.json)
-npm run typecheck:app # full React Native / Expo typecheck (tsconfig.json)
+cd ..                 # repo root
+npm install
+npm run typecheck     # builds packages/domain, then typechecks every workspace
+npm test              # builds packages/domain, then tests every workspace
+
+# or just this app (packages/domain must be built first):
+npm run build -w @foss-tasks/domain
+npm test -w @foss-tasks/app
+npm run typecheck:app -w @foss-tasks/app   # full React Native / Expo typecheck
 ```
 
-`--legacy-peer-deps` and the `@powersync/common` override in `package.json`
-pin a single copy of that package (react-native and react otherwise pull
-different versions, which breaks structural typing across the SDK).
+`@foss-tasks/domain` is consumed as compiled JS from its `dist/`, so an unbuilt
+package looks like a missing module.
+
+`legacy-peer-deps` (root `.npmrc`) and the `@powersync/common` override in the
+root `package.json` pin a single copy of that package (react-native and react
+otherwise pull different versions, which breaks structural typing across the
+SDK). Both are root-only: npm ignores `overrides` in a workspace member.
 
 ## Running the app against a Server
 

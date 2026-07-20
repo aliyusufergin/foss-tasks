@@ -1,5 +1,5 @@
 {
-  "//": "Node-safe seams (domain + data-layer logic + auth client) and their tests. Runs in CI and locally without the React Native/Expo toolchain installed. The full app typechecks via tsconfig.json (npm run typecheck:app) on a dev machine.",
+  "//": "Node-safe seams (data-layer logic + auth client) and their tests. Runs in CI and locally without the React Native/Expo toolchain installed. Pure domain logic now lives in packages/domain and typechecks there; this project resolves it through its built dist/, so run the domain build first. The full app typechecks via tsconfig.json (npm run typecheck:app) on a dev machine.",
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
@@ -15,7 +15,6 @@
     "noEmit": true
   },
   "include": [
-    "src/domain/**/*.ts",
     "src/data/model.ts",
     "src/data/migrations/**/*.ts",
     "src/data/queries.ts",

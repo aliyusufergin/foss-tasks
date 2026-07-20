@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { mergeLww, pickLwwWinner } from "../../src/domain/lww";
+import { mergeLww, pickLwwWinner } from "../src/lww.js";
 
 interface Task {
   id: string;

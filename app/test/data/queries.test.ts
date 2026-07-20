@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { newId } from "../../src/domain/ids";
-import { orderKeyBetween, orderKeys } from "../../src/domain/order-key";
+import { newId, orderKeyBetween, orderKeys } from "@foss-tasks/domain";
 import {
   insertTask,
   listActiveTasks,

@@ -1,0 +1,26 @@
+{
+  "name": "foss-tasks",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted, offline-first, cross-platform task manager (workspace root)",
+  "workspaces": [
+    "app",
+    "packages/*",
+    "services/*"
+  ],
+  "scripts": {
+    "//": "Consumers typecheck and run against @foss-tasks/domain's compiled dist/, so it is built first rather than relying on npm's script ordering across workspaces.",
+    "build:domain": "npm run build -w @foss-tasks/domain",
+    "typecheck": "npm run build:domain && npm run typecheck --workspaces --if-present",
+    "test": "npm run build:domain && npm run test --workspaces --if-present"
+  },
+  "//": "npm honours `overrides` only in the workspace root, so the app's pin lives here. @powersync/* packages disagree on the @powersync/common range they accept; pinning one copy keeps a single instance of its runtime state in the bundle.",
+  "overrides": {
+    "@powersync/common": "1.57.2"
+  },
+  "//allowScripts": "Also root-only under workspaces. esbuild (vitest's bundler) needs its postinstall to fetch the platform binary.",
+  "allowScripts": {
+    "esbuild@0.28.1": true,
+    "esbuild@0.21.5": true
+  }
+}

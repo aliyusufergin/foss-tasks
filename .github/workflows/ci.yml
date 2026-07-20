@@ -5,37 +5,54 @@ on:
     branches: [master]
   pull_request:
 
+# One npm workspace: dependencies install once at the repo root, and each job
+# then drives a single workspace with `-w`. Jobs that consume @foss-tasks/domain
+# build it first — it is consumed as compiled JS in dist/, never as TypeScript
+# source (ADR-0008 §11), so an unbuilt package looks like a missing module.
+#
+# Note what this file still cannot do: it never builds the React Native bundle.
+# Metro's module resolution — the risk this monorepo layout introduces — is only
+# provable on a device. See docs/agents/verification.md.
 jobs:
-  auth:
-    name: auth service
+  domain:
+    name: domain package
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: services/auth
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 24
       - run: npm ci
-      - run: npm run typecheck
-      - run: npm test
+      - run: npm run build -w @foss-tasks/domain
+      - run: npm run typecheck -w @foss-tasks/domain
+      - run: npm test -w @foss-tasks/domain
+
+  auth:
+    name: auth service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci
+      - run: npm run build -w @foss-tasks/domain
+      - run: npm run typecheck -w @foss-tasks/auth
+      - run: npm test -w @foss-tasks/auth
 
   app:
     name: app (seams + typecheck)
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: app
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           # node:sqlite (data-layer harness) is available unflagged from Node 24.
           node-version: 24
-      - run: npm ci --legacy-peer-deps
-      # Node-safe domain + data-layer seams.
-      - run: npm run typecheck
-      - run: npm test
+      - run: npm ci
+      - run: npm run build -w @foss-tasks/domain
+      # Node-safe data-layer + auth-client seams.
+      - run: npm run typecheck -w @foss-tasks/app
+      - run: npm test -w @foss-tasks/app
       # Full React Native / Expo typecheck.
-      - run: npm run typecheck:app
+      - run: npm run typecheck:app -w @foss-tasks/app

@@ -9,6 +9,10 @@
  * seam discipline). The default is the platform `fetch`.
  */
 
+import { parseSession, type Session } from "./session";
+
+export type { Session };
+
 /** The subset of the Fetch API this client needs. */
 export type FetchLike = (
   input: string,
@@ -30,16 +34,6 @@ export interface Credentials {
   password: string;
 }
 
-/** A held session: the JWT plus the identity claims the app needs. */
-export interface Session {
-  accessToken: string;
-  tokenType: string;
-  /** Seconds until the token expires (from issuance). */
-  expiresIn: number;
-  accountId: string;
-  personalSpaceId: string;
-}
-
 export type AuthError =
   | "invalid_credentials"
   | "email_taken"
@@ -49,35 +43,6 @@ export type AuthError =
 export type AuthResult =
   | { ok: true; session: Session }
   | { ok: false; error: AuthError };
-
-interface TokenPayload {
-  access_token: string;
-  token_type: string;
-  expires_in: number;
-  account_id: string;
-  personal_space_id: string;
-}
-
-function parseSession(body: unknown): Session | null {
-  if (typeof body !== "object" || body === null) return null;
-  const p = body as Partial<TokenPayload>;
-  if (
-    typeof p.access_token !== "string" ||
-    typeof p.token_type !== "string" ||
-    typeof p.expires_in !== "number" ||
-    typeof p.account_id !== "string" ||
-    typeof p.personal_space_id !== "string"
-  ) {
-    return null;
-  }
-  return {
-    accessToken: p.access_token,
-    tokenType: p.token_type,
-    expiresIn: p.expires_in,
-    accountId: p.account_id,
-    personalSpaceId: p.personal_space_id,
-  };
-}
 
 export class AuthClient {
   private readonly baseUrl: string;

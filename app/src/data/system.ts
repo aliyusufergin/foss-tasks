@@ -1,16 +1,10 @@
 import { OPSqliteOpenFactory } from "@powersync/op-sqlite";
 import { PowerSyncDatabase } from "@powersync/react-native";
-import { AppConnector } from "./connector";
+import { AppConnector, type SyncConfig } from "./connector";
 import { runMigrations } from "./migrations/runner";
 import { AppSchema } from "./schema";
-import type { TokenStore } from "../auth/token-store";
 
 const DB_FILENAME = "foss-tasks.db";
-
-export interface SystemConfig {
-  powerSyncUrl: string;
-  tokenStore: TokenStore;
-}
 
 /**
  * Opens the on-device PowerSync database (op-sqlite driver — the reason the app
@@ -22,7 +16,7 @@ export class System {
   readonly powersync: PowerSyncDatabase;
   private readonly connector: AppConnector;
 
-  constructor(config: SystemConfig) {
+  constructor(config: SyncConfig) {
     this.powersync = new PowerSyncDatabase({
       schema: AppSchema,
       database: new OPSqliteOpenFactory({ dbFilename: DB_FILENAME }),

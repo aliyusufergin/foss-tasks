@@ -1,4 +1,4 @@
-import type { Session } from "./client";
+import { isSession, type Session } from "./session";
 
 /**
  * Persists the held {@link Session} so a returning user stays signed in across
@@ -14,18 +14,6 @@ export interface SecureKeyValueStore {
 }
 
 const SESSION_KEY = "foss-tasks.session";
-
-function isSession(value: unknown): value is Session {
-  if (typeof value !== "object" || value === null) return false;
-  const s = value as Record<string, unknown>;
-  return (
-    typeof s.accessToken === "string" &&
-    typeof s.tokenType === "string" &&
-    typeof s.expiresIn === "number" &&
-    typeof s.accountId === "string" &&
-    typeof s.personalSpaceId === "string"
-  );
-}
 
 export class TokenStore {
   constructor(private readonly store: SecureKeyValueStore) {}

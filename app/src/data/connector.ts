@@ -5,7 +5,12 @@ import type {
 } from "@powersync/react-native";
 import type { TokenStore } from "../auth/token-store";
 
-export interface ConnectorConfig {
+/**
+ * What both the {@link AppConnector} and the `System` that owns it need: where
+ * the Server is, and the held JWT. One type rather than two identical ones,
+ * since `System` forwards its config straight through to the connector.
+ */
+export interface SyncConfig {
   /** PowerSync Service URL, e.g. `http://10.0.2.2:8080`. */
   powerSyncUrl: string;
   tokenStore: TokenStore;
@@ -17,7 +22,7 @@ export interface ConnectorConfig {
  * membership-scoped buckets), which is what drives downstream live streaming.
  */
 export class AppConnector implements PowerSyncBackendConnector {
-  constructor(private readonly config: ConnectorConfig) {}
+  constructor(private readonly config: SyncConfig) {}
 
   /**
    * KNOWN GAP: this returns the *stored* token, but the interface contract is to

@@ -1,8 +1,8 @@
 {
-  "name": "@foss-tasks/auth",
+  "name": "@foss-tasks/api",
   "version": "0.1.0",
   "private": true,
-  "description": "Minimal email+password auth service issuing PowerSync-compatible JWTs",
+  "description": "Backend API: PowerSync-compatible JWTs (auth) and the /sync/write endpoint",
   "type": "module",
   "engines": {
     "node": ">=20"
@@ -23,6 +23,7 @@
     "pg": "^8.13.1"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.4",
     "@types/node": "^22.10.0",
     "@types/pg": "^8.11.10",
     "tsx": "^4.19.2",

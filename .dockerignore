@@ -1,0 +1,18 @@
+# The API image is built with the repo root as its build context (see
+# services/api/Dockerfile). Keep the context lean: the build needs only the
+# workspace manifests, the domain package, and the api service.
+**/node_modules
+**/dist
+.git
+.env
+*.log
+
+# The app's React Native source never enters the API image — only its
+# package.json is copied, to satisfy the npm workspace tree.
+app/*
+!app/package.json
+
+design
+docs
+infra
+.github

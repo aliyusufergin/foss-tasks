@@ -33,7 +33,7 @@ client_auth:
   jwks_uri: !env PS_JWKS_URL
   # Required so a plain-http, in-cluster JWKS URL (http://auth:...) is accepted.
   allow_local_jwks: true
-  # Must match the auth service's AUTH_JWT_AUDIENCE.
+  # Must match the API service's API_JWT_AUDIENCE.
   audience: ["powersync"]
 
 api:

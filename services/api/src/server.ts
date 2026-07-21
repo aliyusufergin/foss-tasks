@@ -6,7 +6,10 @@ import { signAccessToken } from "./domain/jwt.js";
 import { hashPassword, verifyPassword } from "./domain/password.js";
 import { registerAccount } from "./domain/register.js";
 import type { AuthRepo } from "./domain/types.js";
+import { verifyAccessToken } from "./domain/verify-access-token.js";
 import { verifyHeldToken } from "./domain/verify-held-token.js";
+import { parseWriteRequest } from "./domain/crud.js";
+import type { PgWriteStore } from "./db/write-store.js";
 import type { SigningKey } from "./keys.js";
 
 export interface ServerDeps {
@@ -17,6 +20,12 @@ export interface ServerDeps {
   tokenTtlSeconds: number;
   /** How long after sign-in a held token may still be traded for a fresh one. */
   sessionMaxAgeSeconds: number;
+  /**
+   * Applies PowerSync CRUD transactions to Postgres (ADR-0008). Optional so the
+   * auth domain can be exercised with an in-memory repo and no database; when
+   * absent, `POST /sync/write` reports the service is misconfigured.
+   */
+  writeStore?: PgWriteStore;
   now?: () => Date;
 }
 
@@ -138,6 +147,56 @@ export function buildServer(deps: ServerDeps): FastifyInstance {
     if (account === null) return reply.code(401).send({ error: "invalid_token" });
 
     return reply.code(200).send(await sessionResponse(account.id, account.personalSpaceId));
+  });
+
+  /**
+   * Applies one PowerSync device transaction to the source of truth (ADR-0008).
+   * Auth is the same JWT PowerSync already verifies (RS256, `iss`, `aud`), with
+   * `exp` enforced here — an expired token is simply unauthenticated.
+   *
+   * Always 200 for a request that reached the write store, even when every op is
+   * rejected: the rejected ops are dead-lettered and returned in `rejected[]`, so
+   * the client's queue drains instead of wedging on a 4xx (§9). The non-200
+   * paths are 401 (auth), 400 (not a CRUD envelope), 413 (over the op limit —
+   * retryable), 500 (the service was built without a write store — misconfig),
+   * and 503 (Postgres unreachable — retryable).
+   */
+  app.post("/sync/write", async (request, reply) => {
+    const token = readBearerToken(request.headers.authorization);
+    if (token === null) return reply.code(401).send({ error: "invalid_token" });
+
+    const verified = await verifyAccessToken({
+      token,
+      publicKey: deps.signingKey.publicKey,
+      issuer: deps.issuer,
+      audience: deps.audience,
+      now,
+    });
+    if (!verified.ok) return reply.code(401).send({ error: verified.error });
+
+    const parsed = parseWriteRequest(request.body);
+    if (!parsed.ok) {
+      const status = parsed.error === "too_many_ops" ? 413 : 400;
+      return reply.code(status).send({ error: parsed.error });
+    }
+
+    if (!deps.writeStore) {
+      return reply.code(500).send({ error: "write_store_unavailable" });
+    }
+
+    try {
+      const result = await deps.writeStore.applyTransaction(
+        parsed.request.ops,
+        verified.accountId,
+        now(),
+        parsed.request.transaction_id ?? null,
+      );
+      return reply.code(200).send(result);
+    } catch {
+      // Transient (e.g. Postgres unreachable). Retryable, so the queue is not
+      // discarded — the client retries the same transaction (idempotent, §13).
+      return reply.code(503).send({ error: "write_failed" });
+    }
   });
 
   return app;

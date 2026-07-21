@@ -4,7 +4,7 @@
 #   * postgres         — source of truth (wal_level=logical, powersync publication)
 #   * powersync-bucket — separate Postgres for PowerSync bucket storage (ADR-0007)
 #   * powersync        — PowerSync Service (Postgres bucket, membership sync rules)
-#   * auth             — email+password → PowerSync-compatible JWTs
+#   * api              — PowerSync-compatible JWTs (auth) + the /sync/write endpoint
 #
 # Copy .env.example to .env and fill it in first (see docs/product/self-hosting.md).
 
@@ -64,7 +64,7 @@ services:
       PS_PORT: ${PS_PORT}
       PS_DATA_SOURCE_URI: postgresql://powersync_replication:${POWERSYNC_REPLICATION_PASSWORD}@postgres:5432/${POSTGRES_DB}
       PS_STORAGE_SOURCE_URI: postgresql://${BUCKET_POSTGRES_USER}:${BUCKET_POSTGRES_PASSWORD}@powersync-bucket:5432/${BUCKET_POSTGRES_DB}
-      PS_JWKS_URL: http://auth:${AUTH_PORT}/api/auth/keys
+      PS_JWKS_URL: http://api:${API_PORT}/api/auth/keys
       PS_ADMIN_API_TOKEN: ${PS_ADMIN_API_TOKEN}
     healthcheck:
       test:
@@ -80,24 +80,28 @@ services:
     ports:
       - "${PS_PORT}:${PS_PORT}"
 
-  auth:
-    build: ./services/auth
+  api:
+    build:
+      # Repo root, not ./services/api: the workspace lockfile lives at the root
+      # and @foss-tasks/domain is a workspace dependency (see the Dockerfile).
+      context: .
+      dockerfile: services/api/Dockerfile
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     environment:
-      AUTH_PORT: ${AUTH_PORT}
-      AUTH_HOST: 0.0.0.0
-      AUTH_JWT_ISSUER: ${AUTH_JWT_ISSUER}
-      AUTH_JWT_AUDIENCE: ${AUTH_JWT_AUDIENCE}
-      AUTH_JWT_KID: ${AUTH_JWT_KID}
-      AUTH_JWT_TTL_SECONDS: ${AUTH_JWT_TTL_SECONDS}
-      AUTH_SESSION_MAX_AGE_SECONDS: ${AUTH_SESSION_MAX_AGE_SECONDS}
-      AUTH_JWT_PRIVATE_KEY: ${AUTH_JWT_PRIVATE_KEY}
-      AUTH_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+      API_PORT: ${API_PORT}
+      API_HOST: 0.0.0.0
+      API_JWT_ISSUER: ${API_JWT_ISSUER}
+      API_JWT_AUDIENCE: ${API_JWT_AUDIENCE}
+      API_JWT_KID: ${API_JWT_KID}
+      API_JWT_TTL_SECONDS: ${API_JWT_TTL_SECONDS}
+      API_SESSION_MAX_AGE_SECONDS: ${API_SESSION_MAX_AGE_SECONDS}
+      API_JWT_PRIVATE_KEY: ${API_JWT_PRIVATE_KEY}
+      API_DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
     ports:
-      - "${AUTH_PORT}:${AUTH_PORT}"
+      - "${API_PORT}:${API_PORT}"
 
 volumes:
   postgres_data:

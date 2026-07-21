@@ -1,91 +1,91 @@
 import { useQuery, useStatus } from "@powersync/react";
-import { Button, FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList } from "react-native";
+import { useTranslation } from "react-i18next";
 import type { TaskRow } from "../data/queries";
 import { ACTIVE_TASKS_SQL } from "../data/queries";
-
-/** Alert red for sync failure states, shared until ADR-0006 theming lands. */
-const DANGER = "#b00020";
+import { Box, Text, useTheme } from "../theme/components";
 
 interface Props {
   spaceId: string;
-  onSignOut: () => void;
 }
 
 /**
  * The walking-skeleton task list: a live query over the on-device PowerSync
  * store, scoped to the Personal Space, tombstones hidden, in fractional-index
- * order. Rows appear as the Server streams them, which is what this ticket sets
- * out to prove.
+ * order. Themed via Restyle and localised via i18n (#4).
  *
- * **Read-only by design.** v1 has no backend write endpoint, and PowerSync gives
- * a client no supported download-only mode: a local write would sit in the CRUD
- * queue, and acknowledging it without uploading silently destroys it on the next
- * checkpoint (see docs/research/powersync-client-contracts-2026-07.md). Rather
- * than offer a control that loses data, the app offers no local writes until the
- * write path exists. Creating and editing Tasks lands with that ticket.
+ * **Read-only by design.** v1 has no backend write endpoint yet; creating and
+ * editing Tasks lands with the write-path ticket. See the T02 note in git
+ * history for the PowerSync CRUD-queue reasoning.
  */
-export function TaskListScreen({ spaceId, onSignOut }: Props): JSX.Element {
+export function TaskListScreen({ spaceId }: Props): JSX.Element {
+  const { t } = useTranslation();
+  const theme = useTheme();
   const status = useStatus();
   const { data: tasks } = useQuery<TaskRow>(ACTIVE_TASKS_SQL, [spaceId]);
 
   // downloadError is where an expired/rejected token surfaces — not uploadError.
-  // A UI watching only uploadError would show a cheerful "offline" while sync
-  // was in fact dead.
   const { downloadError, uploadError } = status.dataFlowStatus;
   const error = downloadError ?? uploadError;
 
   // "offline" and "sync is failing" look identical to a user but mean opposite
   // things: one resolves itself when the tunnel comes back, the other does not.
   const stalled = downloadError !== undefined && !status.connected;
+  const statusLabel = stalled
+    ? `▲ ${t("tasks.statusStopped")}`
+    : status.connected
+      ? `● ${t("tasks.statusLive")}`
+      : `○ ${t("tasks.statusOffline")}`;
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={[styles.status, stalled && styles.statusStalled]}>
-          {stalled ? "▲ sync stopped" : status.connected ? "● live" : "○ offline"}
+    <Box flex={1} backgroundColor="bg.base" paddingHorizontal="lg" gap="md">
+      <Text variant="caption" color={stalled ? "status.overdue" : "text.muted"}>
+        {statusLabel}
+      </Text>
+
+      {error !== undefined && (
+        <Text variant="caption" color="status.overdue">
+          {t("tasks.syncError", { message: error.message })}
         </Text>
-        <Button title="Sign out" onPress={onSignOut} />
-      </View>
+      )}
 
-      {error !== undefined && <Text style={styles.error}>sync error: {error.message}</Text>}
-
-      <Text style={styles.note}>
-        Read-only until the write path ships — Tasks stream in from the Server.
+      <Text variant="caption" color="text.muted">
+        {t("tasks.readOnlyNote")}
       </Text>
 
       <FlatList
         data={tasks}
-        keyExtractor={(t) => t.id}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ gap: theme.spacing.sm }}
         renderItem={({ item }) => (
-          <View style={styles.row}>
-            <Text style={styles.rowTitle}>{item.title}</Text>
-            <Text style={styles.rowMeta}>{item.status}</Text>
-          </View>
+          <Box
+            flexDirection="row"
+            justifyContent="space-between"
+            alignItems="center"
+            backgroundColor="bg.surface"
+            borderRadius="md"
+            paddingVertical="md"
+            paddingHorizontal="md"
+          >
+            <Text variant="body" color="text.primary">
+              {item.title}
+            </Text>
+            <Text variant="caption" color="text.muted">
+              {item.status}
+            </Text>
+          </Box>
         )}
-        ListEmptyComponent={<Text style={styles.empty}>No tasks yet.</Text>}
+        ListEmptyComponent={
+          <Box alignItems="center" marginTop="xxl" gap="sm">
+            <Text variant="title" color="text.primary">
+              {t("tasks.empty")}
+            </Text>
+            <Text variant="body" color="text.secondary">
+              {t("tasks.emptyHint")}
+            </Text>
+          </Box>
+        }
       />
-    </View>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, paddingTop: 48, gap: 12 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  status: { fontSize: 14, color: "#555" },
-  // Same alert red as `error` below. Theming (ADR-0006) isn't wired into this
-  // skeleton screen yet; when it is, both read one token.
-  statusStalled: { color: DANGER, fontWeight: "600" },
-  note: { fontSize: 12, color: "#888" },
-  error: { fontSize: 12, color: DANGER },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: "#eee",
-  },
-  rowTitle: { fontSize: 16 },
-  rowMeta: { fontSize: 12, color: "#999" },
-  empty: { textAlign: "center", color: "#999", marginTop: 24 },
-});

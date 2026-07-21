@@ -1,6 +1,10 @@
 import { useState } from "react";
-import { ActivityIndicator, Button, StyleSheet, Text, TextInput, View } from "react-native";
+import { ActivityIndicator, KeyboardAvoidingView, Platform } from "react-native";
+import { useTranslation } from "react-i18next";
 import type { AuthClient, Session } from "../auth/client";
+import { Box, Text, useTheme } from "../theme/components";
+import { Button } from "./components/Button";
+import { Field } from "./components/Field";
 
 interface Props {
   authClient: AuthClient;
@@ -8,18 +12,21 @@ interface Props {
 }
 
 /**
- * Minimal email + password sign-in / register (auth is deliberately minimal in
- * v1 — no OAuth/2FA/reset). On success the held {@link Session} is handed up so
- * the app can connect to sync. This screen is intentionally unstyled scaffolding
- * — the themed design (Ink & Signal) lands with the UI tickets.
+ * Email + password sign-in / register (auth is deliberately minimal in v1 — no
+ * OAuth/2FA/reset). Themed via Restyle and localised via i18n; the T02 hardcoded
+ * strings and hex are gone (this ticket, #4). On success the held {@link Session}
+ * is handed up so the app can connect to sync.
  */
 export function SignInScreen({ authClient, onSignedIn }: Props): JSX.Element {
+  const { t } = useTranslation();
+  const theme = useTheme();
+  const [mode, setMode] = useState<"login" | "register">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function submit(mode: "login" | "register"): Promise<void> {
+  async function submit(): Promise<void> {
     setBusy(true);
     setError(null);
     const result =
@@ -32,40 +39,71 @@ export function SignInScreen({ authClient, onSignedIn }: Props): JSX.Element {
   }
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>foss-tasks</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="password"
-        secureTextEntry
-        value={password}
-        onChangeText={setPassword}
-      />
-      {error !== null && <Text style={styles.error}>{error}</Text>}
-      {busy ? (
-        <ActivityIndicator />
-      ) : (
-        <View style={styles.actions}>
-          <Button title="Sign in" onPress={() => void submit("login")} />
-          <Button title="Register" onPress={() => void submit("register")} />
-        </View>
-      )}
-    </View>
+    <Box flex={1} backgroundColor="bg.base">
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
+      >
+        <Box flex={1} justifyContent="center" padding="xl" gap="lg">
+          <Box
+            width={56}
+            height={56}
+            borderRadius="xl"
+            backgroundColor="accent.default"
+            alignItems="center"
+            justifyContent="center"
+            alignSelf="center"
+          >
+            <Text variant="display" style={{ color: theme.colors["accent.on"] }}>
+              ✓
+            </Text>
+          </Box>
+          <Text variant="display" textAlign="center" color="text.primary">
+            {t("common.appName")}
+          </Text>
+
+          <Field
+            label={t("auth.emailLabel")}
+            placeholder={t("auth.emailPlaceholder")}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <Field
+            label={t("auth.passwordLabel")}
+            placeholder={t("auth.passwordPlaceholder")}
+            secureTextEntry
+            value={password}
+            onChangeText={setPassword}
+          />
+
+          {error !== null && (
+            <Text variant="label" color="status.overdue">
+              {error}
+            </Text>
+          )}
+
+          {busy ? (
+            <ActivityIndicator color={theme.colors["accent.default"]} />
+          ) : (
+            <Button
+              label={mode === "login" ? t("auth.signIn") : t("auth.register")}
+              onPress={() => void submit()}
+            />
+          )}
+
+          <Text
+            variant="label"
+            textAlign="center"
+            color="accent.default"
+            onPress={() => setMode(mode === "login" ? "register" : "login")}
+          >
+            {mode === "login" ? t("auth.switchToRegister") : t("auth.switchToSignIn")}
+          </Text>
+        </Box>
+      </KeyboardAvoidingView>
+    </Box>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 24, gap: 12 },
-  title: { fontSize: 28, fontWeight: "600", textAlign: "center", marginBottom: 12 },
-  input: { borderWidth: 1, borderColor: "#ccc", borderRadius: 8, padding: 12 },
-  actions: { flexDirection: "row", justifyContent: "space-around" },
-  error: { color: "#b00020" },
-});

@@ -1,15 +1,25 @@
 import { PowerSyncContext } from "@powersync/react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, Text, View } from "react-native";
+import { ActivityIndicator } from "react-native";
+import { useTranslation } from "react-i18next";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import * as SecureStore from "expo-secure-store";
 import { AuthClient, type Session } from "./src/auth/client";
 import { type SecureKeyValueStore, TokenStore } from "./src/auth/token-store";
 import { config } from "./src/config";
 import { System } from "./src/data/system";
+import { LanguageProvider } from "./src/i18n/LanguageProvider";
+import { initI18n } from "./src/i18n";
+import { LanguagePreferenceStore } from "./src/prefs/language-preference";
+import { ThemePreferenceStore } from "./src/prefs/theme-preference";
+import { AppThemeProvider } from "./src/theme/ThemeProvider";
+import { Box, Text } from "./src/theme/components";
+import { RootNavigator } from "./src/ui/RootNavigator";
 import { SignInScreen } from "./src/ui/SignInScreen";
-import { TaskListScreen } from "./src/ui/TaskListScreen";
 
-// Adapt Expo SecureStore's *Async API to the store port.
+// Adapt Expo SecureStore's *Async API to the store port. The token store needs
+// the OS keystore (secret material); the preference stores only need a
+// device-local key-value backend, and reuse the same adapter (ADR-0006 note).
 const secureStore: SecureKeyValueStore = {
   getItem: (key) => SecureStore.getItemAsync(key),
   setItem: (key, value) => SecureStore.setItemAsync(key, value),
@@ -17,12 +27,19 @@ const secureStore: SecureKeyValueStore = {
 };
 
 const tokenStore = new TokenStore(secureStore);
+const themePrefStore = new ThemePreferenceStore(secureStore);
+const languagePrefStore = new LanguagePreferenceStore(secureStore);
 const authClient = new AuthClient({ baseUrl: config.authUrl });
+
+// Seed i18next synchronously (inline resources) so the first render is localised;
+// LanguageProvider reconciles the stored preference once mounted.
+initI18n();
 
 /**
  * App root: restores any held session on launch (stay-signed-in), then wires the
  * PowerSync System and streams live once authenticated. Signing out disconnects
- * and clears local data.
+ * and clears local data. The whole tree sits under the theme + language providers
+ * (#4) so every screen is themed and localised.
  */
 export default function App(): JSX.Element {
   const [ready, setReady] = useState(false);
@@ -87,30 +104,73 @@ export default function App(): JSX.Element {
     setSession(null);
   }
 
+  return (
+    <SafeAreaProvider>
+      <AppThemeProvider store={themePrefStore}>
+        <LanguageProvider store={languagePrefStore}>
+          <AppContent
+            ready={ready}
+            bootError={bootError}
+            session={session}
+            system={system}
+            onSignedIn={(s) => void onSignedIn(s)}
+            onSignOut={() => void onSignOut()}
+          />
+        </LanguageProvider>
+      </AppThemeProvider>
+    </SafeAreaProvider>
+  );
+}
+
+interface ContentProps {
+  ready: boolean;
+  bootError: Error | null;
+  session: Session | null;
+  system: System;
+  onSignedIn: (session: Session) => void;
+  onSignOut: () => void;
+}
+
+/** Split out so it renders *inside* the theme + language providers and can read
+ *  tokens and localised strings. */
+function AppContent({
+  ready,
+  bootError,
+  session,
+  system,
+  onSignedIn,
+  onSignOut,
+}: ContentProps): JSX.Element {
+  const { t } = useTranslation();
+
   if (!ready) {
     return (
-      <View style={{ flex: 1, justifyContent: "center" }}>
+      <Box flex={1} justifyContent="center" backgroundColor="bg.base">
         <ActivityIndicator />
-      </View>
+      </Box>
     );
   }
 
   if (bootError !== null) {
     return (
-      <View style={{ flex: 1, justifyContent: "center", padding: 24, gap: 8 }}>
-        <Text style={{ fontSize: 18, fontWeight: "600" }}>Couldn&apos;t start</Text>
-        <Text selectable>{bootError.message}</Text>
-      </View>
+      <Box flex={1} justifyContent="center" padding="xl" gap="sm" backgroundColor="bg.base">
+        <Text variant="title" color="text.primary">
+          {t("common.bootError")}
+        </Text>
+        <Text variant="body" color="text.secondary" selectable>
+          {bootError.message}
+        </Text>
+      </Box>
     );
   }
 
   if (session === null) {
-    return <SignInScreen authClient={authClient} onSignedIn={(s) => void onSignedIn(s)} />;
+    return <SignInScreen authClient={authClient} onSignedIn={onSignedIn} />;
   }
 
   return (
     <PowerSyncContext.Provider value={system.powersync}>
-      <TaskListScreen spaceId={session.personalSpaceId} onSignOut={() => void onSignOut()} />
+      <RootNavigator spaceId={session.personalSpaceId} onSignOut={onSignOut} />
     </PowerSyncContext.Provider>
   );
 }

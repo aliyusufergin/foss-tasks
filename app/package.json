@@ -10,6 +10,7 @@
     "ios": "expo run:ios",
     "test": "vitest run",
     "test:watch": "vitest",
+    "build:theme": "node scripts/build-theme.ts",
     "typecheck": "tsc -p tsconfig.seams.json --noEmit",
     "typecheck:app": "tsc -p tsconfig.json --noEmit"
   },
@@ -19,18 +20,28 @@
     "@powersync/op-sqlite": "^0.9.15",
     "@powersync/react": "^1.5.0",
     "@powersync/react-native": "^1.20.0",
+    "@react-navigation/bottom-tabs": "^7.18.13",
+    "@react-navigation/native": "^7.3.13",
+    "@react-navigation/native-stack": "^7.18.5",
+    "@shopify/restyle": "^2.4.5",
     "expo": "~52.0.0",
     "expo-build-properties": "~0.13.3",
     "expo-dev-client": "~5.0.0",
+    "expo-localization": "~16.0.1",
     "expo-secure-store": "~14.0.0",
+    "i18next": "^24.2.3",
     "react": "18.3.1",
+    "react-i18next": "^15.7.4",
     "react-native": "0.76.9",
-    "react-native-get-random-values": "~1.11.0"
+    "react-native-get-random-values": "~1.11.0",
+    "react-native-safe-area-context": "4.12.0",
+    "react-native-screens": "~4.4.0"
   },
   "devDependencies": {
     "@babel/core": "^7.25.0",
     "@types/node": "^22.10.0",
     "@types/react": "~18.3.12",
+    "style-dictionary": "^4.4.0",
     "typescript": "^5.7.2",
     "vitest": "^2.1.8"
   },

@@ -20,6 +20,14 @@
     "src/data/queries.ts",
     "src/auth/client.ts",
     "src/auth/token-store.ts",
+    "src/theme/color.ts",
+    "src/theme/compile.ts",
+    "src/theme/tokens.generated.ts",
+    "src/prefs/store.ts",
+    "src/prefs/theme-preference.ts",
+    "src/prefs/language-preference.ts",
+    "src/i18n/en.ts",
+    "src/i18n/tr.ts",
     "test/**/*.ts"
   ]
 }

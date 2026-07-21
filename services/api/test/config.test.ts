@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { loadConfig } from "../src/config.js";
 
 const base = {
-  AUTH_JWT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----",
-  AUTH_DATABASE_URL: "postgresql://u:p@db:5432/foss_tasks",
+  API_JWT_PRIVATE_KEY: "-----BEGIN PRIVATE KEY-----\\nabc\\n-----END PRIVATE KEY-----",
+  API_DATABASE_URL: "postgresql://u:p@db:5432/foss_tasks",
 };
 
 describe("loadConfig", () => {
@@ -24,19 +24,19 @@ describe("loadConfig", () => {
   });
 
   it("reads only the passed env, not process.env", () => {
-    const cfg = loadConfig({ ...base, AUTH_PORT: "7000" });
+    const cfg = loadConfig({ ...base, API_PORT: "7000" });
     expect(cfg.port).toBe(7000);
   });
 
   it("throws when a required key is missing", () => {
-    expect(() => loadConfig({ AUTH_DATABASE_URL: "x" })).toThrow(
-      /AUTH_JWT_PRIVATE_KEY/,
+    expect(() => loadConfig({ API_DATABASE_URL: "x" })).toThrow(
+      /API_JWT_PRIVATE_KEY/,
     );
   });
 
   it("throws on a non-integer numeric key", () => {
-    expect(() => loadConfig({ ...base, AUTH_PORT: "not-a-number" })).toThrow(
-      /AUTH_PORT/,
+    expect(() => loadConfig({ ...base, API_PORT: "not-a-number" })).toThrow(
+      /API_PORT/,
     );
   });
 });

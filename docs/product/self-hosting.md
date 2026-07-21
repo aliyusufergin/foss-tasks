@@ -7,7 +7,7 @@ The whole backend runs from one `docker-compose up`. It brings up four services:
 | `postgres`         | Source of truth. Runs with `wal_level=logical` and a `powersync` publication. |
 | `powersync-bucket` | A **separate** Postgres for PowerSync's bucket storage (ADR-0007).  |
 | `powersync`        | The PowerSync Service — streams per-Space-scoped data to Devices.   |
-| `auth`             | Minimal email + password auth; issues JWTs PowerSync accepts.       |
+| `api`              | Email + password auth (issues JWTs PowerSync accepts) and the `/sync/write` endpoint. |
 
 You run one Server; it hosts many independent Accounts, each isolated by
 Space-membership sync rules.
@@ -29,23 +29,23 @@ Edit `.env` and replace every `change-me-*` value with your own secrets.
 
 ### 2. Generate the JWT signing key
 
-The auth service signs tokens with an RS256 key and publishes the matching
+The API service signs tokens with an RS256 key and publishes the matching
 public key at a JWKS endpoint that PowerSync reads. Generate a key pair:
 
 ```bash
-cd services/auth
+cd services/api
 npm install
 npm run gen-keys
 ```
 
-Copy the printed PEM into `.env` as `AUTH_JWT_PRIVATE_KEY`, on a single line with
+Copy the printed PEM into `.env` as `API_JWT_PRIVATE_KEY`, on a single line with
 literal `\n` between the PEM lines:
 
 ```
-AUTH_JWT_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n
+API_JWT_PRIVATE_KEY=-----BEGIN PRIVATE KEY-----\nMIIE...\n-----END PRIVATE KEY-----\n
 ```
 
-`AUTH_JWT_AUDIENCE` in `.env` must match `client_auth.audience` in
+`API_JWT_AUDIENCE` in `.env` must match `client_auth.audience` in
 `infra/powersync/service.yaml` (both default to `powersync`).
 
 ### 3. Start the stack
@@ -124,19 +124,19 @@ with an `owner` membership, so out of the box a token streams only its own data.
 
 ## Operations
 
-- **Logs:** `docker compose logs -f powersync` (or `auth`, `postgres`).
+- **Logs:** `docker compose logs -f powersync` (or `api`, `postgres`).
 - **Stop:** `docker compose down` (keeps data volumes).
 - **Reset all data:** `docker compose down -v` (drops the Postgres volumes; on
   next up the init scripts re-run). PowerSync bucket state is rebuildable from
   the source Postgres, so wiping only `powersync_bucket_data` is safe too.
-- **Rotate the signing key:** replace `AUTH_JWT_PRIVATE_KEY`, bump
-  `AUTH_JWT_KID`, and restart `auth`. Existing tokens stay valid until they
-  expire (`AUTH_JWT_TTL_SECONDS`).
+- **Rotate the signing key:** replace `API_JWT_PRIVATE_KEY`, bump
+  `API_JWT_KID`, and restart `api`. Existing tokens stay valid until they
+  expire (`API_JWT_TTL_SECONDS`).
 
 ## Security notes
 
 - This is **minimal auth** (v1): email + password only — no OAuth, 2FA, or
   password reset.
 - Change **every** secret in `.env`; never commit `.env` (it is gitignored).
-- Put a TLS-terminating reverse proxy in front of `auth` and `powersync` for any
+- Put a TLS-terminating reverse proxy in front of `api` and `powersync` for any
   deployment reachable off localhost.

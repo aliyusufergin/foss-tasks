@@ -27,8 +27,8 @@ jobs:
       - run: npm run typecheck -w @foss-tasks/domain
       - run: npm test -w @foss-tasks/domain
 
-  auth:
-    name: auth service
+  api:
+    name: api service
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +37,10 @@ jobs:
           node-version: 24
       - run: npm ci
       - run: npm run build -w @foss-tasks/domain
-      - run: npm run typecheck -w @foss-tasks/auth
-      - run: npm test -w @foss-tasks/auth
+      - run: npm run typecheck -w @foss-tasks/api
+      # Integration tests run a real Postgres in-process (PGlite) — no Docker or
+      # service container needed (ADR-0008; services/api/test/support/pglite-pool.ts).
+      - run: npm test -w @foss-tasks/api
 
   app:
     name: app (seams + typecheck)
